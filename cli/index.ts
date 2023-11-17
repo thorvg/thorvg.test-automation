@@ -10,8 +10,10 @@ import { exec } from 'child_process';
   // CLI Options
   // * -D : debug
   // * -E : excute classify
+  // * -V : verbose
   const isDebug = process.argv.includes('-D');
   const executionMode = process.argv.includes('-E');
+  const verbose = process.argv.includes('-V');
 
   const browser = await puppeteer.launch({ 
     headless: isDebug ? false : 'new',
@@ -34,6 +36,8 @@ import { exec } from 'child_process';
     const log = msg.text();
     if (log.includes('Similarity')) {
       console.log('TEST LOG:', log);
+    } else if (verbose) {
+      console.log('VERBOSE LOG:', log);
     }
   });
 
