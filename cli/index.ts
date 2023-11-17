@@ -7,6 +7,8 @@ import path from "path";
 import { exec } from 'child_process';
 // @ts-ignore
 import art from 'ascii-art';
+// @ts-ignore
+import Table from 'cli-table';
 
 (async () => {
   // CLI Options
@@ -64,14 +66,22 @@ import art from 'ascii-art';
     exec(`cd ${targetDir}; ${script}`);
   }
 
-  if (failed.length > 0) {
-    process.exit(1);
-  }
-
   await page.waitForSelector('.debug-result-pdf');
   const pdfUriString = await page.$eval('.debug-result-pdf', el => el.textContent) as string;
   var buf = Buffer.from((pdfUriString as string).replace('data:application/pdf;filename=generated.pdf;base64,', ''), 'base64');
   fs.writeFileSync('result.pdf', buf);
+
+  const table = new Table({
+    head: ['name', 'passed', 'failed'],
+  });
+
+  const results = [...passed, ...failed].map(v => [v, passed.includes(v) ? 'O' : 'X', failed.includes(v) ? 'O' : 'X']);
+  table.push(...results);
+  console.log(table.toString());
+
+  if (failed.length > 0) {
+    process.exit(1);
+  }
 
   browser.close();
 })();
