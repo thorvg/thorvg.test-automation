@@ -27,7 +27,7 @@ import art from 'ascii-art';
   console.log(textLogo);
 
   // Navigate the page to a URL
-  await page.goto('https://thorvg-tester.vercel.app?debug=true');
+  await page.goto('https://thorvg-test-automation.vercel.app?debug=true');
   await page.setViewport({ width: 1080, height: 1024 });
   await page.waitForSelector('input');
 
@@ -46,11 +46,26 @@ import art from 'ascii-art';
     }
   });
 
-  await page.waitForSelector('.debug-result-script', { timeout: 3000 * fileList.length });
-  const script = await page.$eval('.debug-result-script', el => el.textContent);
+  await page.waitForSelector('.debug-result-list', { timeout: 3000 * fileList.length });
+  const json = await page.$eval('.debug-result-list', el => el.textContent) as string;
+  const { passed, failed } = JSON.parse(json as string);
 
   if (executionMode) {
+    let script = `mkdir -p ./passed ./failed;`;
+
+    if (passed.length > 0) {
+      script += ` mv ${passed.join(' ')} ./passed;`;
+    }
+
+    if (failed.length > 0) {
+      script += ` mv ${failed.join(' ')} ./failed;`;
+    }
+
     exec(`cd ${targetDir}; ${script}`);
+  }
+
+  if (failed.length > 0) {
+    process.exit(1);
   }
 
   await page.waitForSelector('.debug-result-pdf');
