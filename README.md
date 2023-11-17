@@ -13,7 +13,7 @@ Click to use [ThorVG Tester](https://thorvg-tester.vercel.app)
 
 ## CLI
 ```sh
-npm install -g thorvg/thorvg.test-automation
+npm i -g 'https://gitpkg.now.sh/thorvg/thorvg.test-automation/cli?main'
 tvg-cli /path/to/target-dir
 
 # Optional if you want check result via PDF

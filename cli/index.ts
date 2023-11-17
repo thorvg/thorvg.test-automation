@@ -1,3 +1,6 @@
+#! /usr/bin/env ts-node
+'use strict';
+
 import puppeteer from 'puppeteer';
 import fs from "fs";
 import path from "path";
