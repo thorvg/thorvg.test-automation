@@ -20,6 +20,16 @@ tvg-cli /path/to/target-dir
 open result.pdf
 ```
 
+```
+Options:
+    -E  Run automatic classification after test
+    -D  Debug Mode, test with GUI, CLI at same time
+
+    Target:
+        The directory path where `.json` files are located,
+        at least one of valid lottie json has to be provided.
+```
+
 ## Review with PDF
 
 When test is done, system will provide you with PDF that includes test results, you can simply check and review.
