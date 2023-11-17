@@ -39,6 +39,10 @@ function App() {
   let [failedCnt, setFailedCnt] = useState(0);
   let [log, setLog] = useState<string[]>([]);
 
+  const hasDone = cnt !== 0 && cnt >= fileLength - 1;
+  const isTesting = fileLength > 0 && !hasDone;
+  const isReady = fileLength < 1;
+
   useEffect(() => {
     if (initialized.current) {
       return;
@@ -111,10 +115,13 @@ function App() {
   const exportToPDF = async () => {
     const doc = new jsPDF();
     const resultBoard = document.querySelector('.result-board');
+    const passedBoard = document.querySelector('.result') as any;
 
     const compability = Math.ceil((cnt - failedCnt) / cnt * 100);
     doc.text(`ThorVG Testing Results (Passed: ${cnt - failedCnt} / ${cnt})`, 20, 20);
     doc.text(`Compability : ${compability}%`, 20, 30);
+
+    passedBoard.style.display = 'block';
 
     await html2canvas(resultBoard as any).then(canvas => {
       // Few necessary setting options
@@ -133,8 +140,8 @@ function App() {
         return;
       }
 
-      doc.save('test.pdf'); // save / download
-      doc.output('dataurlnewwindow'); // just open it
+      doc.save('result.pdf');
+      passedBoard.style.display = 'none';
     });
   }
 
@@ -157,9 +164,6 @@ function App() {
       debugResult?.appendChild(text);
       return;
     }
-
-    await window.navigator.clipboard.writeText(script);
-    alert("Copied script to clipboard! Put this command in the folder where the test files are located to classify them.");
   };
 
 
@@ -361,12 +365,18 @@ function App() {
     <OpenCvProvider onLoad={(_cv: any) => cv = _cv}>
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
           {
-            (cnt !== 0 && cnt >= fileLength - 1) ? <p>DONE</p>
+            isReady ? <p>ThorVG Test Automation</p>
+            :
+            hasDone ? <p>DONE <br/>(Passed: {cnt - failedCnt} / {cnt})</p>
             :
             <p>
               {curerntFile} - {currentCompability}
+              
+              {
+                (fileLength > 0 && !hasDone) &&
+                <img src={logo} className="App-logo" alt="logo" />
+              }
             </p>
           }
 
@@ -419,12 +429,16 @@ function App() {
             />
           }
 
+          <div style={{ height: 44 }}></div>
           
-          <div style={{ marginBottom: 32, fontSize: 13, height: 200, overflowY: 'scroll' }}>
-            {
-              log.map((line, i) => <div style={{ marginBottom: 4 }}>{line}<br/></div>)
-            }
-          </div>
+          {
+            isReady ||
+            <div style={{ fontSize: 13, height: 200, overflowY: 'scroll', marginBottom: 32 }}>
+              {
+                log.map((line, i) => <div style={{ marginBottom: 4 }}>{line}<br/></div>)
+              }
+            </div>
+          }
         </header>
 
         
@@ -462,7 +476,7 @@ function App() {
           </div>
         </div>
 
-        <div className='result' style={{ padding: 24 }}>
+        <div className='result' style={{ padding: 24, display: 'none' }}>
           <div className='result-error-row-first' style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'start', marginBottom: 20, fontWeight: 'bold' }}>
             <div style={{ width: 200, textAlign: 'center' }}>Name</div>
             <div style={{ width: 100, textAlign: 'center' }}>ThorVG</div>
