@@ -5,6 +5,8 @@ import puppeteer from 'puppeteer';
 import fs from "fs";
 import path from "path";
 import { exec } from 'child_process';
+// @ts-ignore
+import art from 'ascii-art';
 
 (async () => {
   // CLI Options
@@ -20,6 +22,9 @@ import { exec } from 'child_process';
     protocolTimeout: 3000000,
   });
   const page = await browser.newPage();
+
+  const textLogo = await art.font("ThorVG", 'doom').completed();
+  console.log(textLogo);
 
   // Navigate the page to a URL
   await page.goto('https://thorvg-tester.vercel.app?debug=true');
@@ -52,8 +57,6 @@ import { exec } from 'child_process';
   const pdfUriString = await page.$eval('.debug-result-pdf', el => el.textContent) as string;
   var buf = Buffer.from((pdfUriString as string).replace('data:application/pdf;filename=generated.pdf;base64,', ''), 'base64');
   fs.writeFileSync('result.pdf', buf);
-
-  // TODO: log progress, case by case, total progress
 
   browser.close();
 })();
