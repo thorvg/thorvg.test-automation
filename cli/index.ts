@@ -30,6 +30,13 @@ import { exec } from 'child_process';
   const fileUploader = await page.$("input[type=file]");
   fileUploader?.uploadFile(...fileList);
 
+  page.on('console', msg => {
+    const log = msg.text();
+    if (log.includes('Similarity')) {
+      console.log('TEST LOG:', log);
+    }
+  });
+
   await page.waitForSelector('.debug-result-script', { timeout: 3000 * fileList.length });
   const script = await page.$eval('.debug-result-script', el => el.textContent);
 
