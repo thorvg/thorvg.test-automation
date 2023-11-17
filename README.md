@@ -2,16 +2,15 @@
 
 ThorVG Test Automation is rendering test tool for ThorVG Engine. It works as both GUI and CLI, detects rendering error by comparing canvas bitmap, automatically.
 
-https://github.com/tinyjin/thorvg.tester/assets/11167117/b4df338a-d4e1-4671-b1ca-c4ccc1fdf3ec
-
-
-
 # Usage
 
 ## GUI
 Click to use [ThorVG Tester](https://thorvg-test-automation.vercel.app)
 
+![gui-example](./docs/gui-example.gif)
+
 ## CLI
+![cli-example](./docs/cli-example.gif)
 ```sh
 git clone git@github.com:thorvg/thorvg.test-automation.git
 cd thorvg.test-automation
