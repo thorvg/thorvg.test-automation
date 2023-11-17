@@ -24,6 +24,7 @@ open result.pdf
 Options:
     -E  Run automatic classification after test
     -D  Debug Mode, test with GUI, CLI at same time
+    -V  Verbose, log all
 
     Target:
         The directory path where `.json` files are located,
