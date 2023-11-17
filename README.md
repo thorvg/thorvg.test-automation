@@ -13,11 +13,12 @@ Click to use [ThorVG Tester](https://thorvg-test-automation.vercel.app)
 
 ## CLI
 ```sh
-npm i -g 'https://gitpkg.now.sh/thorvg/thorvg.test-automation/cli?main'
-tvg-cli /path/to/target-dir
+git clone git@github.com:thorvg/thorvg.test-automation.git
+cd thorvg.test-automation
+npm i -g ./cli
 
-# Optional if you want check result via PDF
-open result.pdf
+tvg-cli /path/to/target-dir
+open result.pdf # Optional: open summarized PDF
 ```
 
 ```
