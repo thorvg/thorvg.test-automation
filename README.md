@@ -9,7 +9,7 @@ https://github.com/tinyjin/thorvg.tester/assets/11167117/b4df338a-d4e1-4671-b1ca
 # Usage
 
 ## GUI
-Click to use [ThorVG Tester](https://thorvg-tester.vercel.app)
+Click to use [ThorVG Tester](https://thorvg-test-automation.vercel.app)
 
 ## CLI
 ```sh
