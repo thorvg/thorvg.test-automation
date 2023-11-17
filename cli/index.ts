@@ -14,7 +14,7 @@ import { exec } from 'child_process';
   const executionMode = process.argv.includes('-E');
 
   const browser = await puppeteer.launch({ 
-    headless: !isDebug,
+    headless: isDebug ? false : 'new',
     protocolTimeout: 3000000,
   });
   const page = await browser.newPage();
