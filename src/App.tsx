@@ -32,8 +32,8 @@ function App() {
   const [curerntFile, setCurrentFile] = useState('');
   const [currentCompability, setCurrentCompability] = useState('');
 
-  const [passedList, setPassedList] = useState<string[]>([]);
-  const [failedList, setFailedList] = useState<string[]>([]);
+  let [passedList, setPassedList] = useState<string[]>([]);
+  let [failedList, setFailedList] = useState<string[]>([]);
 
   let [cnt, setCnt] = useState(0);
   let [failedCnt, setFailedCnt] = useState(0);
@@ -92,9 +92,11 @@ function App() {
       try {
         if (isCompability) {
           passedList.push(file.name);
+          setPassedList(passedList.slice());
           await saveResult(logText);
         } else {
           failedList.push(file.name);
+          setFailedList(failedList.slice());
           failedCnt += 1;
           setFailedCnt(failedCnt);
           await saveError(logText);
@@ -109,7 +111,7 @@ function App() {
     }
 
     exportToPDF();
-    createClaasifyScript();
+    saveDebugResult();
   };
 
   const exportToPDF = async () => {
@@ -145,27 +147,21 @@ function App() {
     });
   }
 
-  const createClaasifyScript = async () => {
-    let script = `mkdir -p ./passed ./failed;`;
-
-    if (passedList.length > 0) {
-      script += ` mv ${passedList.join(' ')} ./passed;`;
-    }
-
-    if (failedList.length > 0) {
-      script += ` mv ${failedList.join(' ')} ./failed;`;
-    }
-
-    if (isDebug) {
-      const debugResult = document.querySelector('.debug-result');
-      const text = document.createElement('span');;
-      text.textContent = script;
-      text.classList.add('debug-result-script');
-      debugResult?.appendChild(text);
+  const saveDebugResult = async () => {
+    if (!isDebug) {
       return;
     }
-  };
 
+    const debugResult = document.querySelector('.debug-result');
+    const text = document.createElement('span');
+    text.textContent = JSON.stringify({
+      passed: passedList,
+      failed: failedList,
+    });
+
+    text.classList.add('debug-result-list');
+    debugResult?.appendChild(text);
+  };
 
   const run = async (file: File): Promise<number> => {
     return new Promise((resolve, reject) => { // !
