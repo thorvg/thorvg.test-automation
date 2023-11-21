@@ -465,7 +465,7 @@ function App() {
           <div className='result-error-row-first' style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'start', marginBottom: 20, fontWeight: 'bold' }}>
             <div style={{ width: 200, textAlign: 'center' }}>Name</div>
             <div style={{ width: 100, textAlign: 'center' }}>ThorVG</div>
-            <div style={{ width: 100, textAlign: 'center' }}>lottie-js</div>
+            <div style={{ width: 100, textAlign: 'center' }}>Expectation</div>
             <div style={{ width: 100, textAlign: 'center' }}>Diff</div>
           </div>
           <div className='result-error-row' style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', borderBottom: '1px solid #bdbdbd' }}>
@@ -476,7 +476,7 @@ function App() {
           <div className='result-error-row-first' style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'start', marginBottom: 20, fontWeight: 'bold' }}>
             <div style={{ width: 200, textAlign: 'center' }}>Name</div>
             <div style={{ width: 100, textAlign: 'center' }}>ThorVG</div>
-            <div style={{ width: 100, textAlign: 'center' }}>lottie-js</div>
+            <div style={{ width: 100, textAlign: 'center' }}>Expectation</div>
             <div style={{ width: 100, textAlign: 'center' }}>Diff</div>
           </div>
           <div className='result-row' style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', borderBottom: '1px solid #bdbdbd' }}>
