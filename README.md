@@ -20,13 +20,11 @@ In GUI mode, developers benefit from a user-friendly interface, allowing them to
 For a streamlined and automated testing workflow, the Command-Line Interface is ideal. It facilitates integration into automated testing pipelines and continuous integration systems.
 
 ```sh
-$git clone git@github.com:thorvg/thorvg.test-automation.git
-$cd thorvg.test-automation
-$npm i -g ./cli
+$npm i -g ./cli # in thorvg.test-automation
 
 $tvg-cli /path/to/target-dir
 
-$open result.pdf # open summarized PDF
+$open result.pdf # open the summarized PDF
 ```
 
 ```
