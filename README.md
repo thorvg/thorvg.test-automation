@@ -12,6 +12,12 @@ ThorVG Test Automation streamlines the testing process by automatically detectin
 
 ## How It Works
 
+### Workflow
+This figure illustrates the brief workflow of the ThorVG test automation.</br>
+
+![image](https://github.com/thorvg/thorvg.test-automation/assets/3711518/c814d1fa-b225-490a-9eee-012c6d27e7d9)
+
+
 ### GUI
 In GUI mode, developers benefit from a user-friendly interface, allowing them to interact with the tool effortlessly. The graphical representation aids in visualizing rendering errors, making the debugging process more intuitive.
 - [Try it out](https://thorvg-test-automation.vercel.app)
