@@ -15,7 +15,8 @@ ThorVG Test Automation streamlines the testing process by automatically detectin
 ### Workflow
 This figure illustrates a brief workflow of the ThorVG test automation.</br>
 
-![image](https://github.com/thorvg/thorvg.test-automation/assets/3711518/952add08-2d11-4d56-98aa-4a948857914b)
+![image](https://github.com/thorvg/thorvg.test-automation/assets/3711518/9dd91dfc-afa7-45c7-8552-9b723423c799)
+
 
 ### GUI
 In GUI mode, developers benefit from a user-friendly interface, allowing them to interact with the tool effortlessly. The graphical representation aids in visualizing rendering errors, making the debugging process more intuitive.
@@ -47,7 +48,7 @@ Options:
 
 To enhance the robustness of ThorVG, we plan to integrate test automation using ThorVG. The following figure illustrates a concise workflow for ThorVG's Continuous Integration (CI) test automation.
 
-![image](https://github.com/thorvg/thorvg.test-automation/assets/3711518/3242764a-5c46-468c-afbd-a99737060e6d)
+![image](https://github.com/thorvg/thorvg.test-automation/assets/3711518/ddadd8f1-5f40-45fa-b5c5-3a3fb12ff341)
 
 
 ## Review with PDF
