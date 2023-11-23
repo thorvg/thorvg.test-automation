@@ -1,17 +1,14 @@
-import "@lottiefiles/lottie-player";
-import { useEffect, useRef, useState } from 'react';
 import './App.css';
+import lottieWeb from 'lottie-web';
+import { useEffect, useRef, useState } from 'react';
 import logo from './logo.svg';
 import Player from './utils/player';
-// @ts-ignore
-import { OpenCvProvider } from 'opencv-react';
-import { FileUploader } from "react-drag-drop-files";
-import { diffWithResembleJS } from './utils/diff';
-import { testingSize, size, successPercentage } from "./utils/constant";
-import { drawSvgIntoCanvas } from "./utils/drawer";
-import jsPDF from "jspdf";
+import { BlobReader, TextWriter, ZipReader } from "@zip.js/zip.js";
 import html2canvas from "html2canvas";
-import { BlobReader, ZipReader, TextWriter } from "@zip.js/zip.js";
+import jsPDF from "jspdf";
+import { FileUploader } from "react-drag-drop-files";
+import { size, successPercentage, testingSize } from "./utils/constant";
+import { diffWithResembleJS } from './utils/diff';
 
 declare global {
   interface Window { 
@@ -21,7 +18,6 @@ declare global {
 }
 
 let player: any;
-let cv: any;
 let isDebug = false;
 
 function App() {
@@ -166,13 +162,13 @@ function App() {
   const run = async (file: File): Promise<number> => {
     return new Promise((resolve, reject) => { // !
       try {
-        const thorvgCanvas: any = document.querySelector("#thorvg-canvas");
-        const lottieCanvas: any = document.querySelector("#lottie-canvas");
+        const thorvgCanvas: any = document.querySelector(".thorvg-canvas > canvas");
+        const lottieCanvasWrapper: any = document.querySelector(".lottie-canvas");
         const diffImg: any = document.querySelector("#diff-img");
 
-        diffImg.setAttribute('src', '');
         thorvgCanvas.getContext('2d').clearRect(0, 0, testingSize, testingSize);
-        lottieCanvas.getContext('2d').clearRect(0, 0, testingSize, testingSize);
+        lottieCanvasWrapper.innerHTML = '';
+        diffImg.setAttribute('src', '');
 
         setTimeout(async () => {
           const isLoaded = await load(file);
@@ -206,8 +202,8 @@ function App() {
       resultText.style.width = '200px';
       resultRow?.appendChild(resultText);
   
-      const thorvgCanvas = document.querySelector('#thorvg-canvas');
-      const lottieCanvas = document.querySelector('#lottie-canvas');
+      const thorvgCanvas = document.querySelector('.thorvg-canvas > canvas');
+      const lottieCanvas = document.querySelector('.lottie-canvas > canvas');
       const diffImg = document.querySelector('#diff-img');
       
       const thorvgCloneCanvas = thorvgCanvas?.cloneNode(true) as any;
@@ -215,10 +211,14 @@ function App() {
       const diffCloneImg = diffImg?.cloneNode(true) as any;
 
       thorvgCloneCanvas.width = size;
+      thorvgCloneCanvas.style.width = `${size}px`;
       thorvgCloneCanvas.height = size;
+      thorvgCloneCanvas.style.height = `${size}px`;
 
       lottieCloneCanvas.width = size;
+      lottieCloneCanvas.style.width = `${size}px`;
       lottieCloneCanvas.height = size;
+      lottieCloneCanvas.style.height = `${size}px`;
 
       diffCloneImg.width = size;
       diffCloneImg.height = size;
@@ -247,8 +247,8 @@ function App() {
       resultText.innerText = logText;
       resultRow?.appendChild(resultText);
   
-      const thorvgCanvas = document.querySelector('#thorvg-canvas');
-      const lottieCanvas = document.querySelector('#lottie-canvas');
+      const thorvgCanvas = document.querySelector('.thorvg-canvas > canvas');
+      const lottieCanvas = document.querySelector('.lottie-canvas > canvas');
       const diffImg = document.querySelector('#diff-img');
       
       const thorvgCloneCanvas = thorvgCanvas?.cloneNode(true) as any;
@@ -256,10 +256,14 @@ function App() {
       const diffCloneImg = diffImg?.cloneNode(true) as any;
 
       thorvgCloneCanvas.width = size;
+      thorvgCloneCanvas.style.width = `${size}px`;
       thorvgCloneCanvas.height = size;
+      thorvgCloneCanvas.style.height = `${size}px`;
 
       lottieCloneCanvas.width = size;
+      lottieCloneCanvas.style.width = `${size}px`;
       lottieCloneCanvas.height = size;
+      lottieCloneCanvas.style.height = `${size}px`;
 
       diffCloneImg.width = size;
       diffCloneImg.height = size;
@@ -278,50 +282,36 @@ function App() {
   }
 
   const test = async () => {
-    const thorvgCanvas: any = document.querySelector("#thorvg-canvas");
-    const lottieCanvas: any = document.querySelector("#lottie-canvas");
-
-    // copy lottie-svg to canvas
-    try {
-      // @ts-ignore
-      const svg: any = document.querySelector('.lottie-player').shadowRoot.querySelector('svg');
-      const canvas: any = document.querySelector("#lottie-canvas");
-
-      await drawSvgIntoCanvas(svg, canvas);
-    } catch (err) {
-      console.log(err);
-      return 0;
-    }
+    const thorvgCanvas: any = document.querySelector(".thorvg-canvas > canvas");
+    const lottieCanvas: any = document.querySelector(".lottie-canvas > canvas");
 
     // resembleJS diff
     const compabilityWithResembleJS = await diffWithResembleJS(thorvgCanvas, lottieCanvas);
     return compabilityWithResembleJS;
-
-    // // OpenCV diff
-    // const compabilityOpenCV = diffWithOpenCV(cv, thorvgCanvas, lottieCanvas);
-    // return compabilityOpenCV;
   }
 
   const load = async (file: File) => {
     return new Promise<boolean>(async (resolve, reject) => {
-      const lottiePlayer: any = document.querySelector("lottie-player");
+      let anim: any = null;
+      const lottieCanvas: any = document.querySelector(".lottie-canvas");
       const reader = new FileReader();
       reader.readAsText(file);
       reader.onload = async () => {
         const json = reader.result as any;
-
-        try {
-          // lottie-player
-          lottiePlayer.load(json);
-        } catch (err) {
-          console.log('Mark as an error : maybe lottie issue');
-          resolve(false);
-        }
     
-        // check JSON
         try {
-          JSON.parse(json);
+          anim = lottieWeb.loadAnimation({
+            container: lottieCanvas,
+            renderer: "canvas",
+            loop: false,
+            autoplay: false,
+            animationData: JSON.parse(json),
+            rendererSettings: {
+              clearCanvas: true,
+            },
+          });
         } catch (err) {
+          console.error('LottieWeb load error');
           resolve(false);
         }
     
@@ -330,20 +320,14 @@ function App() {
 
         fr.onloadend = () => {
           const bytes = fr.result as any;
-          console.log(bytes);
           
-
           try {
             player.loadBytes(bytes);
 
             const playerTotalFrames = Math.floor(player.totalFrame);
-            const lottieTotalFrames = Math.floor(lottiePlayer.getLottie().totalFrames);
             const targetFrame = Math.floor(playerTotalFrames / 2); // Run with middle frame
-          
             player.seek(targetFrame);
-            lottiePlayer.seek(targetFrame);
-
-            console.log(`totalFrames ${playerTotalFrames} ${lottieTotalFrames}`);
+            anim.goToAndStop(targetFrame, true);
           } catch (err) {
             console.log(err);
             return resolve(false);
@@ -358,7 +342,7 @@ function App() {
   }
 
   return (
-    <OpenCvProvider onLoad={(_cv: any) => cv = _cv}>
+    <>
       <div className="App">
         <header className="App-header">
           {
@@ -436,29 +420,15 @@ function App() {
             </div>
           }
         </header>
-
         
-        <div style={{ display: 'none', overflowX: 'scroll', width: '100%' }}>
-          <canvas id="thorvg-canvas" width={testingSize} height={testingSize} />
-          <canvas id="lottie-canvas" width={testingSize} height={testingSize} />
+        <div style={{ display: 'block', overflowX: 'scroll', width: '100%', position: 'absolute', opacity: 0 }}>
+          <div className="thorvg-canvas" style={{ width: testingSize, height: testingSize }}>
+            <canvas id="thorvg-canvas" width={testingSize * 2} height={testingSize * 2} style={{ width: '100%', height: '100%' }} />
+          </div>
+          <div className="lottie-canvas" style={{ width: testingSize, height: testingSize }}></div>
           <img id="diff-img" width={testingSize} height={testingSize} />
-
-          <lottie-player
-            class="lottie-player"
-            // autoplay
-            // loop={}
-            // controls
-            width={testingSize + 'px'}
-            style={{ width: testingSize, height: testingSize }}
-            mode="normal"
-          />
         </div>
       </div>
-
-      {/* <div style={{ display: 'none' }}>
-        <canvas id="thorvg-output-canvas" width={512} height={512} />
-        <canvas id="lottie-output-canvas" width={512} height={512} />
-      </div> */}
 
       <div className="result-board" style={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', backgroundColor: '#f6f6f6' }}>
         <div className='result-error' style={{ padding: 24 }}>
@@ -487,7 +457,7 @@ function App() {
 
         </div>
       </div>
-    </OpenCvProvider>
+    </>
   );
 }
 
