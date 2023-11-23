@@ -13,10 +13,9 @@ ThorVG Test Automation streamlines the testing process by automatically detectin
 ## How It Works
 
 ### Workflow
-This figure illustrates the brief workflow of the ThorVG test automation.</br>
+This figure illustrates a brief workflow of the ThorVG test automation.</br>
 
-![image](https://github.com/thorvg/thorvg.test-automation/assets/3711518/c814d1fa-b225-490a-9eee-012c6d27e7d9)
-
+![image](https://github.com/thorvg/thorvg.test-automation/assets/3711518/952add08-2d11-4d56-98aa-4a948857914b)
 
 ### GUI
 In GUI mode, developers benefit from a user-friendly interface, allowing them to interact with the tool effortlessly. The graphical representation aids in visualizing rendering errors, making the debugging process more intuitive.
@@ -43,6 +42,13 @@ Options:
         The directory path where `.json` files are located,
         at least one of valid lottie json has to be provided.
 ```
+
+## ThorVG CI Integration (TBD)
+
+To enhance the robustness of ThorVG, we plan to integrate test automation using ThorVG. The following figure illustrates a concise workflow for ThorVG's Continuous Integration (CI) test automation.
+
+![image](https://github.com/thorvg/thorvg.test-automation/assets/3711518/3242764a-5c46-468c-afbd-a99737060e6d)
+
 
 ## Review with PDF
 
