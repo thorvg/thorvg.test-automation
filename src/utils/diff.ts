@@ -5,7 +5,8 @@ export const diffWithResembleJS = async (canvas: any, targetCanvas: any): Promis
   const lottieURL = targetCanvas.toDataURL("image/png");
 
   return new Promise((resolve, reject) => {
-    resemble.compare(thorvgURL, lottieURL, {}, (err: any, data: any) => {
+    resemble.compare(thorvgURL, lottieURL, { scaleToSameSize: true }, (err: any, data: any) => {
+      console.log(err);
       const { misMatchPercentage, getImageDataUrl } = data;
       const diffImg = document.querySelector('#diff-img') as any;
       diffImg.src = getImageDataUrl();

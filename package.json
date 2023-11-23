@@ -5,7 +5,6 @@
   "main": "public/Main.js",
   "homepage": "./",
   "dependencies": {
-    "@lottiefiles/lottie-player": "^2.0.2",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -18,6 +17,7 @@
     "electron-builder": "^24.6.4",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
+    "lottie-web": "latest",
     "opencv-react": "^0.0.6",
     "puppeteer": "^21.5.1",
     "react": "^18.2.0",
