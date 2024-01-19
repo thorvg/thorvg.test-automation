@@ -2,13 +2,14 @@ import './App.css';
 import lottieWeb from 'lottie-web';
 import { useEffect, useRef, useState } from 'react';
 import logo from './logo.svg';
-import Player from './utils/player';
 import { BlobReader, TextWriter, ZipReader } from "@zip.js/zip.js";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { FileUploader } from "react-drag-drop-files";
 import { size, successPercentage, testingSize } from "./utils/constant";
 import { diffWithResembleJS } from './utils/diff';
+import '@thorvg/lottie-player';
+import { LottiePlayer } from '@thorvg/lottie-player';
 
 declare global {
   interface Window { 
@@ -17,7 +18,6 @@ declare global {
   }
 }
 
-let player: any;
 let isDebug = false;
 
 function App() {
@@ -46,24 +46,7 @@ function App() {
 
     // check debug mode from query param
     isDebug = window.location.href.includes('debug');
-
     initialized.current = true;
-
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = '/wasm/thorvg-wasm.js';
-    document.head.appendChild(script);
-
-    script.onload = () => {
-      window.Module.onRuntimeInitialized = () => {
-        if (player != null) {
-          return;
-        }
-
-        player = new Player();
-        window.player = player;
-      };
-    };
   }, []);
 
   const start = async (fileList: any) => {
@@ -162,11 +145,11 @@ function App() {
   const run = async (file: File): Promise<number> => {
     return new Promise((resolve, reject) => { // !
       try {
-        const thorvgCanvas: any = document.querySelector(".thorvg-canvas > canvas");
+        const thorvgCanvasWrapper: any = document.querySelector(".thorvg-canvas");
         const lottieCanvasWrapper: any = document.querySelector(".lottie-canvas");
         const diffImg: any = document.querySelector("#diff-img");
 
-        thorvgCanvas.getContext('2d').clearRect(0, 0, testingSize, testingSize);
+        thorvgCanvasWrapper.innerHTML = '';
         lottieCanvasWrapper.innerHTML = '';
         diffImg.setAttribute('src', '');
 
@@ -202,7 +185,7 @@ function App() {
       resultText.style.width = '200px';
       resultRow?.appendChild(resultText);
   
-      const thorvgCanvas = document.querySelector('.thorvg-canvas > canvas');
+      const thorvgCanvas = document.querySelector("lottie-player")?.shadowRoot?.querySelector('canvas');
       const lottieCanvas = document.querySelector('.lottie-canvas > canvas');
       const diffImg = document.querySelector('#diff-img');
       
@@ -247,7 +230,7 @@ function App() {
       resultText.innerText = logText;
       resultRow?.appendChild(resultText);
   
-      const thorvgCanvas = document.querySelector('.thorvg-canvas > canvas');
+      const thorvgCanvas = document.querySelector("lottie-player")?.shadowRoot?.querySelector('canvas');
       const lottieCanvas = document.querySelector('.lottie-canvas > canvas');
       const diffImg = document.querySelector('#diff-img');
       
@@ -282,7 +265,7 @@ function App() {
   }
 
   const test = async () => {
-    const thorvgCanvas: any = document.querySelector(".thorvg-canvas > canvas");
+    const thorvgCanvas: any = document.querySelector("lottie-player")?.shadowRoot?.querySelector('canvas');
     const lottieCanvas: any = document.querySelector(".lottie-canvas > canvas");
 
     // resembleJS diff
@@ -294,6 +277,8 @@ function App() {
     return new Promise<boolean>(async (resolve, reject) => {
       let anim: any = null;
       const lottieCanvas: any = document.querySelector(".lottie-canvas");
+      const thorvgCanvas: any = document.querySelector(".thorvg-canvas");
+      
       const reader = new FileReader();
       reader.readAsText(file);
       reader.onload = async () => {
@@ -314,7 +299,12 @@ function App() {
           console.error('LottieWeb load error');
           resolve(false);
         }
-    
+
+        const thorvgLottiePlayer = document.createElement('lottie-player') as LottiePlayer;
+        thorvgLottiePlayer.style.width = `${testingSize}px`;
+        thorvgLottiePlayer.style.height = `${testingSize}px`;
+        thorvgCanvas.appendChild(thorvgLottiePlayer);
+        
         const blob = new Blob([json], {type:"application/json"});
         const fr = new FileReader();
 
@@ -322,11 +312,12 @@ function App() {
           const bytes = fr.result as any;
           
           try {
-            player.loadBytes(bytes);
+            thorvgLottiePlayer.load(JSON.parse(json));
+            // player.loadBytes(bytes);
 
-            const playerTotalFrames = Math.floor(player.totalFrame);
+            const playerTotalFrames = Math.floor(thorvgLottiePlayer.totalFrame);
             const targetFrame = Math.floor(playerTotalFrames / 2); // Run with middle frame
-            player.seek(targetFrame);
+            thorvgLottiePlayer.seek(targetFrame);
             anim.goToAndStop(targetFrame, true);
           } catch (err) {
             console.log(err);
@@ -423,7 +414,6 @@ function App() {
         
         <div style={{ display: 'block', overflowX: 'scroll', width: '100%', position: 'absolute', opacity: 0 }}>
           <div className="thorvg-canvas" style={{ width: testingSize, height: testingSize }}>
-            <canvas id="thorvg-canvas" width={testingSize * 2} height={testingSize * 2} style={{ width: '100%', height: '100%' }} />
           </div>
           <div className="lottie-canvas" style={{ width: testingSize, height: testingSize }}></div>
           <img id="diff-img" width={testingSize} height={testingSize} />
