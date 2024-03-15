@@ -156,7 +156,7 @@ function App() {
         setTimeout(async () => {
           const isLoaded = await load(file);
           if (!isLoaded) {
-            resolve(0);
+            console.warn('ThorVG load error');
           }
 
           setTimeout(async () => {
@@ -309,22 +309,25 @@ function App() {
         const fr = new FileReader();
 
         fr.onloadend = () => {
-          const bytes = fr.result as any;
+          thorvgLottiePlayer.load(JSON.parse(json));
           
-          try {
-            thorvgLottiePlayer.load(JSON.parse(json));
-            // player.loadBytes(bytes);
+          thorvgLottiePlayer.addEventListener('error', () => {
+            resolve(false);
+          });
 
-            const playerTotalFrames = Math.floor(thorvgLottiePlayer.totalFrame);
-            const targetFrame = Math.floor(playerTotalFrames / 2); // Run with middle frame
-            thorvgLottiePlayer.seek(targetFrame);
-            anim.goToAndStop(targetFrame, true);
-          } catch (err) {
-            console.log(err);
-            return resolve(false);
-          }
+          thorvgLottiePlayer.addEventListener('load', () => {
+            try {
+              const playerTotalFrames = Math.floor(thorvgLottiePlayer.totalFrame);
+              const targetFrame = Math.floor(playerTotalFrames / 2); // Run with middle frame
+              thorvgLottiePlayer.seek(targetFrame);
+              anim.goToAndStop(targetFrame, true);
+            } catch (err) {
+              console.log(err);
+              return resolve(false);
+            }
 
-          resolve(true);
+            resolve(true);
+          });
         };
 
         fr.readAsArrayBuffer(blob);
