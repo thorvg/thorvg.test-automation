@@ -2046,10 +2046,10 @@
   dependencies:
     "@babel/runtime" "^7.12.5"
 
-"@thorvg/lottie-player@^1.0.0-beta.10":
-  version "1.0.0-beta.10"
-  resolved "https://registry.yarnpkg.com/@thorvg/lottie-player/-/lottie-player-1.0.0-beta.10.tgz#a123b6cede5008ec6b88278af8e9776f4ea5fc3a"
-  integrity sha512-TzQ2osSrgv5XGjb4Bi1o3Nhh9xBL1dLUtgn+5JstfN6HtNTm84fr6oHH/dxlQLgQoSGoVTi44T0swgIvpPogUw==
+"@thorvg/lottie-player@^1.0.0-beta.11":
+  version "1.0.0-beta.11"
+  resolved "https://registry.yarnpkg.com/@thorvg/lottie-player/-/lottie-player-1.0.0-beta.11.tgz#9888adf2b6c8f8ad147185e7b7df78eb04cb97d3"
+  integrity sha512-labGIz6gCxKtCZ4P+/3LcvLS1are21tB+HU8xEWbXhmV6N4qK/jcGmuqCehYxX3VDpoteLJ5kmIsNJVVw6tCUg==
   dependencies:
     lit "^3.1.0"
     url "^0.11.3"
