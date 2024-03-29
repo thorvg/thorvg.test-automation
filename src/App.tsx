@@ -7,7 +7,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { FileUploader } from "react-drag-drop-files";
 import { size, successPercentage, testingSize } from "./utils/constant";
-import { diffWithResembleJS } from './utils/diff';
+import { diffCanvas } from './utils/diff';
 import '@thorvg/lottie-player';
 import { LottiePlayer } from '@thorvg/lottie-player';
 
@@ -269,7 +269,7 @@ function App() {
     const lottieCanvas: any = document.querySelector(".lottie-canvas > canvas");
 
     // resembleJS diff
-    const compabilityWithResembleJS = await diffWithResembleJS(thorvgCanvas, lottieCanvas);
+    const compabilityWithResembleJS = await diffCanvas(thorvgCanvas, lottieCanvas);
     return compabilityWithResembleJS;
   }
 

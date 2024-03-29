@@ -1,25 +1,13 @@
 {
   "name": "thorvg.test-automation",
-  "version": "0.1.0",
   "private": true,
-  "main": "public/Main.js",
   "homepage": "./",
   "dependencies": {
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
     "@thorvg/lottie-player": "^1.0.0-beta.12",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.60",
-    "@types/react": "^18.2.36",
-    "@types/react-dom": "^18.2.14",
     "@zip.js/zip.js": "^2.7.30",
-    "electron": "^27.0.4",
-    "electron-builder": "^24.6.4",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
     "lottie-web": "latest",
-    "opencv-react": "^0.0.6",
     "puppeteer": "^21.5.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -35,11 +23,8 @@
     "crypto": false
   },
   "scripts": {
-    "test": "craco test",
-    "start": "DISABLE_ESLINT_PLUGIN=true craco start",
-    "build": "DISABLE_ESLINT_PLUGIN=true craco build",
-    "start:electron": "BROWSER=none npm start; ELECTRON_START_URL=http://localhost:3000 electron .",
-    "build:electron": "npm build && electron-builder build -c.extraMetadata.main=build/Main.js",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "run:cli": "ts-node ./cli-src"
   },
   "eslintConfig": {
@@ -61,7 +46,13 @@
     ]
   },
   "devDependencies": {
-    "@craco/craco": "^7.1.0",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.60",
+    "@types/react": "^18.2.36",
+    "@types/react-dom": "^18.2.14",
     "@types/resemblejs": "^4.1.3",
     "ts-node": "^10.9.1"
   }
