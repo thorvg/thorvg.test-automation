@@ -1924,14 +1924,6 @@
   dependencies:
     "@babel/runtime" "^7.12.5"
 
-"@thorvg/lottie-player@^1.0.0-beta.12":
-  version "1.0.0-beta.12"
-  resolved "https://registry.yarnpkg.com/@thorvg/lottie-player/-/lottie-player-1.0.0-beta.12.tgz#2de84249df2f9ab8b0d178222a127dda90c171c3"
-  integrity sha512-IZ8OnYOnDP83RapcttRRRoX9tRvbwoYf6zdy+x5A8hHpkhnTOiyXEI6tzCrjqgEiZLjfQ7iAN4+JqeP3/mYpSw==
-  dependencies:
-    lit "^3.1.0"
-    url "^0.11.3"
-
 "@tootallnate/once@1":
   version "1.1.2"
   resolved "https://registry.npmjs.org/@tootallnate/once/-/once-1.1.2.tgz"
@@ -6844,11 +6836,6 @@ loose-envify@^1.1.0, loose-envify@^1.4.0:
   integrity sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
-
-lottie-web@latest:
-  version "5.12.2"
-  resolved "https://registry.npmjs.org/lottie-web/-/lottie-web-5.12.2.tgz"
-  integrity sha512-uvhvYPC8kGPjXT3MyKMrL3JitEAmDMp30lVkuq/590Mw9ok6pWcFCwXJveo0t5uqYw1UREQHofD+jVpdjBv8wg==
 
 lower-case@^2.0.2:
   version "2.0.2"
