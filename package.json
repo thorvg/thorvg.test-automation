@@ -3,11 +3,11 @@
   "private": true,
   "homepage": "./",
   "dependencies": {
-    "@thorvg/lottie-player": "latest",
+    "@thorvg/lottie-player": "^1.0.0-beta.28",
     "@zip.js/zip.js": "^2.7.30",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
-    "lottie-web": "latest",
+    "lottie-web": "^5.12.2",
     "puppeteer": "^21.5.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
