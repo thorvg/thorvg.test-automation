@@ -26,7 +26,7 @@ function App() {
   const [fileLength, setFileLength] = useState(0);
   
   const [curerntFile, setCurrentFile] = useState('');
-  const [currentCompability, setCurrentCompability] = useState('');
+  const [currentCompatibility, setCurrentCompatibility] = useState('');
 
   let [passedList, setPassedList] = useState<string[]>([]);
   let [failedList, setFailedList] = useState<string[]>([]);
@@ -54,14 +54,14 @@ function App() {
 
     for (const file of fileList) {
       setCurrentFile(file.name);
-      setCurrentCompability('Checking...');
+      setCurrentCompatibility('Checking...');
 
-      const compability = await run(file);
-      const isCompability = compability >= successPercentage;
+      const compatibility = await run(file);
+      const passed = compatibility >= successPercentage;
 
-      logText = `${isCompability ? '✅' : '❗'} ${file.name} \n * Similarity: ${compability}%`;
+      logText = `${passed ? '✅' : '❗'} ${file.name} \n * Similarity: ${compatibility}%`;
 
-      setCurrentCompability('' + compability + '%');
+      setCurrentCompatibility('' + compatibility + '%');
       console.info(logText);
       log.push(logText);
 
@@ -69,7 +69,7 @@ function App() {
 
       // save result 
       try {
-        if (isCompability) {
+        if (passed) {
           passedList.push(file.name);
           setPassedList(passedList.slice());
           await saveResult(logText);
@@ -98,9 +98,9 @@ function App() {
     const resultBoard = document.querySelector('.result-board');
     const passedBoard = document.querySelector('.result') as any;
 
-    const compability = Math.ceil((cnt - failedCnt) / cnt * 100);
+    const passRate = Math.ceil((cnt - failedCnt) / cnt * 100);
     doc.text(`ThorVG Testing Results (Passed: ${cnt - failedCnt} / ${cnt})`, 20, 20);
-    doc.text(`Compability : ${compability}%`, 20, 30);
+    doc.text(`Pass Rate : ${passRate}%`, 20, 30);
 
     passedBoard.style.display = 'block';
 
@@ -171,8 +171,8 @@ function App() {
 
           setTimeout(async () => {
             try {
-              const compability = await test();
-              resolve(compability);
+              const compatibility = await test();
+              resolve(compatibility);
             } catch (err) {
               resolve(0);
             }
@@ -279,8 +279,7 @@ function App() {
     const lottieCanvas: any = document.querySelector(".lottie-canvas > canvas");
 
     // resembleJS diff
-    const compabilityWithResembleJS = await diffCanvas(thorvgCanvas, lottieCanvas);
-    return compabilityWithResembleJS;
+    return await diffCanvas(thorvgCanvas, lottieCanvas);
   }
 
   const load = async (file: File) => {
@@ -356,7 +355,7 @@ function App() {
             hasDone ? <p>DONE <br/>(Passed: {cnt - failedCnt} / {cnt})</p>
             :
             <p>
-              {curerntFile} - {currentCompability}
+              {curerntFile} - {currentCompatibility}
               
               {
                 (fileLength > 0 && !hasDone) &&
