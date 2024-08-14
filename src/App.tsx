@@ -6,7 +6,7 @@ import { BlobReader, TextWriter, ZipReader } from "@zip.js/zip.js";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { FileUploader } from "react-drag-drop-files";
-import { size, successPercentage, testingSize } from "./utils/constant";
+import { size, successPercentage, testingSize, loadTimeout } from "./utils/constant";
 import { diffCanvas } from './utils/diff';
 import '@thorvg/lottie-player';
 import { LottiePlayer } from '@thorvg/lottie-player';
@@ -154,9 +154,19 @@ function App() {
         diffImg.setAttribute('src', '');
 
         setTimeout(async () => {
+          let isTimeout = false;
+          const timer = setTimeout(() => {
+            console.warn('ThorVG load timeout');
+            isTimeout = true;
+            resolve(0);
+          }, loadTimeout);
+
           const isLoaded = await load(file);
-          if (!isLoaded) {
+          clearTimeout(timer);
+
+          if (!isLoaded || isTimeout) {
             console.warn('ThorVG load error');
+            return resolve(0);
           }
 
           setTimeout(async () => {
