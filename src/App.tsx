@@ -309,8 +309,9 @@ function App() {
         const fr = new FileReader();
 
         fr.onloadend = () => {
-          thorvgLottiePlayer.load(JSON.parse(json));
-          
+          // TODO: load() function doesn't work in this scope
+          // replaced with workaround code, should be reverted
+          thorvgLottiePlayer.src = JSON.parse(json);
           thorvgLottiePlayer.addEventListener('error', () => {
             resolve(false);
           });
