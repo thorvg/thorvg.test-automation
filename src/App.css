@@ -24,6 +24,10 @@
   color: white;
 }
 
+.App-header > p {
+  justify-content: center;
+}
+
 .App-link {
   color: #61dafb;
 }
@@ -35,4 +39,15 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.thorvg-version {
+  position: relative;
+  margin-top: -4px;
+  font-size: 12px;
+  color: black;
+  border-radius: 12px;
+  background-color: lightgray;
+  padding: 4px 8px;
+  margin-top: -4px;
 }
