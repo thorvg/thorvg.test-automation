@@ -22,6 +22,8 @@ let isDebug = false;
 
 function App() {
   const initialized = useRef(false);
+  const [version, setVersion] = useState('');
+
   const [uploaded, setUploaded] = useState(false);
   const [fileLength, setFileLength] = useState(0);
   
@@ -47,6 +49,7 @@ function App() {
     // check debug mode from query param
     isDebug = window.location.href.includes('debug');
     initialized.current = true;
+    loadVersion();
   }, []);
 
   const start = async (fileList: any) => {
@@ -101,6 +104,7 @@ function App() {
     const passRate = Math.ceil((cnt - failedCnt) / cnt * 100);
     doc.text(`ThorVG Testing Results (Passed: ${cnt - failedCnt} / ${cnt})`, 20, 20);
     doc.text(`Pass Rate : ${passRate}%`, 20, 30);
+    doc.text(`Version : v${version}`, 20, 40);
 
     passedBoard.style.display = 'block';
 
@@ -109,7 +113,7 @@ function App() {
       const imgWidth = 208; // your own stuff to calc the format you want
       const imgHeight = canvas.height * imgWidth / canvas.width; // your own stuff to calc the format you want
       const contentDataURL = canvas.toDataURL('image/png');
-      doc.addImage(contentDataURL, 'PNG', 0, 40, imgWidth, imgHeight);
+      doc.addImage(contentDataURL, 'PNG', 0, 50, imgWidth, imgHeight);
 
       if (isDebug) {
         const uriString = doc.output('datauristring');
@@ -313,7 +317,7 @@ function App() {
         thorvgLottiePlayer.style.width = `${testingSize}px`;
         thorvgLottiePlayer.style.height = `${testingSize}px`;
         thorvgCanvas.appendChild(thorvgLottiePlayer);
-        
+
         const blob = new Blob([json], {type:"application/json"});
         const fr = new FileReader();
 
@@ -345,12 +349,18 @@ function App() {
     });
   }
 
+  const loadVersion = async () => {
+    const thorvgLottiePlayer = document.createElement('lottie-player') as LottiePlayer;
+    const { THORVG_VERSION } = thorvgLottiePlayer.getVersion();
+    setVersion(THORVG_VERSION);
+  }
+
   return (
     <>
       <div className="App">
         <header className="App-header">
           {
-            isReady ? <p>ThorVG Test Automation</p>
+            isReady ? <p>ThorVG Test Automation <span className="thorvg-version">v{version}</span></p>
             :
             hasDone ? <p>DONE <br/>(Passed: {cnt - failedCnt} / {cnt})</p>
             :

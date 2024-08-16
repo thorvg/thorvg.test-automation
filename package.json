@@ -3,7 +3,7 @@
   "private": true,
   "homepage": "./",
   "dependencies": {
-    "@thorvg/lottie-player": "^1.0.0-beta.28",
+    "@thorvg/lottie-player": "^1.0.0-beta.29",
     "@zip.js/zip.js": "^2.7.30",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
