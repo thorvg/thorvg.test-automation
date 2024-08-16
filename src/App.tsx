@@ -18,7 +18,14 @@ declare global {
   }
 }
 
+interface SimiliarityResult {
+  average: number;
+  frames: number[];
+}
+
 let isDebug = false;
+let anim: any = null;
+let thorvgLottiePlayer: LottiePlayer;
 
 function App() {
   const initialized = useRef(false);
@@ -56,12 +63,21 @@ function App() {
       setCurrentFile(file.name);
       setCurrentCompatibility('Checking...');
 
-      const compatibility = await run(file);
-      const passed = compatibility >= successPercentage;
+      const res = await run(file);
+      if (!res) {
+        // TODO Error
+      }
 
-      logText = `${passed ? '✅' : '❗'} ${file.name} \n * Similarity: ${compatibility}%`;
+      const { average, frames } = res as SimiliarityResult;
+      const passed = average >= successPercentage;
 
-      setCurrentCompatibility('' + compatibility + '%');
+      const resultText = `${passed ? '✅' : '❗'} ${file.name} - Similarity: ${average}%`;
+      logText = resultText;
+      for (let i = 0; i < frames.length; i++) {
+        logText += `\n * Frame ${i} : ${frames[i]}%`;
+      }
+
+      setCurrentCompatibility('' + average + '%');
       console.info(logText);
       log.push(logText);
 
@@ -72,13 +88,13 @@ function App() {
         if (passed) {
           passedList.push(file.name);
           setPassedList(passedList.slice());
-          await saveResult(logText);
+          await saveResult(resultText);
         } else {
           failedList.push(file.name);
           setFailedList(failedList.slice());
           failedCnt += 1;
           setFailedCnt(failedCnt);
-          await saveError(logText);
+          await saveError(resultText);
         }
       } catch (err) {
         // TODO : save error
@@ -142,47 +158,55 @@ function App() {
     debugResult?.appendChild(text);
   };
 
-  const run = async (file: File): Promise<number> => {
-    return new Promise((resolve, reject) => { // !
+  const run = async (file: File): Promise<SimiliarityResult | null> => {
+    return new Promise(async (resolve, reject) => { // !
       try {
-        const thorvgCanvasWrapper: any = document.querySelector(".thorvg-canvas");
-        const lottieCanvasWrapper: any = document.querySelector(".lottie-canvas");
-        const diffImg: any = document.querySelector("#diff-img");
+        const thorvgCanvasWrapper = document.querySelector(".thorvg-canvas") as HTMLElement;
+        const lottieCanvasWrapper: any = document.querySelector(".lottie-canvas") as HTMLElement;
+        const diffImg = document.querySelector("#diff-img") as HTMLElement;
 
         thorvgCanvasWrapper.innerHTML = '';
         lottieCanvasWrapper.innerHTML = '';
         diffImg.setAttribute('src', '');
 
-        setTimeout(async () => {
-          let isTimeout = false;
-          const timer = setTimeout(() => {
-            console.warn('ThorVG load timeout');
-            isTimeout = true;
-            resolve(0);
-          }, loadTimeout);
+        let isTimeout = false;
+        const timer = setTimeout(() => {
+          console.warn('ThorVG load timeout');
+          isTimeout = true;
+          resolve(null);
+        }, loadTimeout);
 
-          const isLoaded = await load(file);
-          clearTimeout(timer);
+        const isLoaded = await load(file);
+        clearTimeout(timer);
 
-          if (!isLoaded || isTimeout) {
-            console.warn('ThorVG load error');
-            return resolve(0);
-          }
+        if (!isLoaded || isTimeout) {
+          console.warn('ThorVG load error');
+          return resolve(null);
+        }
 
-          setTimeout(async () => {
-            try {
-              const compatibility = await test();
-              resolve(compatibility);
-            } catch (err) {
-              resolve(0);
-            }
-          }, 100);
-        }, 200);
+        const results = [];
+
+        // get frames (for 0%, 25%, 50%, 75%, 100%)
+        const totalFrame = thorvgLottiePlayer.totalFrame;
+        const frameList = [0, Math.floor(totalFrame / 4), Math.floor(totalFrame / 2), Math.floor(totalFrame * 3 / 4), totalFrame];
+
+        console.log('Total frame: ', totalFrame);
+        for (const frame of frameList) {
+          await seek(frame);
+          const compatibility = await test();
+
+          results.push(compatibility);
+        }
+
+        resolve({
+          average: results.reduce((a, b) => a + b, 0) / results.length,
+          frames: results,
+        });
       } catch (err) {
         reject(err);  // ! return err; => reject(err);
       }
     })
-  }
+  };
 
   const saveResult = async (logText: string): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -198,7 +222,7 @@ function App() {
       const thorvgCanvas = document.querySelector("lottie-player")?.shadowRoot?.querySelector('canvas');
       const lottieCanvas = document.querySelector('.lottie-canvas > canvas');
       const diffImg = document.querySelector('#diff-img');
-      
+
       const thorvgCloneCanvas = thorvgCanvas?.cloneNode(true) as any;
       const lottieCloneCanvas = lottieCanvas?.cloneNode(true) as any;
       const diffCloneImg = diffImg?.cloneNode(true) as any;
@@ -274,6 +298,18 @@ function App() {
     });
   }
 
+  const seek = async (frame: number): Promise<boolean> => {
+    try {
+      await thorvgLottiePlayer.seek(frame);
+      await anim.goToAndStop(frame, true);
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+
+    return true;
+  }
+
   const test = async () => {
     const thorvgCanvas: any = document.querySelector("lottie-player")?.shadowRoot?.querySelector('canvas');
     const lottieCanvas: any = document.querySelector(".lottie-canvas > canvas");
@@ -284,7 +320,6 @@ function App() {
 
   const load = async (file: File) => {
     return new Promise<boolean>(async (resolve, reject) => {
-      let anim: any = null;
       const lottieCanvas: any = document.querySelector(".lottie-canvas");
       const thorvgCanvas: any = document.querySelector(".thorvg-canvas");
       
@@ -309,7 +344,7 @@ function App() {
           resolve(false);
         }
 
-        const thorvgLottiePlayer = document.createElement('lottie-player') as LottiePlayer;
+        thorvgLottiePlayer = document.createElement('lottie-player') as LottiePlayer;
         thorvgLottiePlayer.style.width = `${testingSize}px`;
         thorvgLottiePlayer.style.height = `${testingSize}px`;
         thorvgCanvas.appendChild(thorvgLottiePlayer);
@@ -326,16 +361,8 @@ function App() {
           });
 
           thorvgLottiePlayer.addEventListener('load', () => {
-            try {
-              const playerTotalFrames = Math.floor(thorvgLottiePlayer.totalFrame);
-              const targetFrame = Math.floor(playerTotalFrames / 2); // Run with middle frame
-              thorvgLottiePlayer.seek(targetFrame);
-              anim.goToAndStop(targetFrame, true);
-            } catch (err) {
-              console.log(err);
-              return resolve(false);
-            }
-
+            thorvgLottiePlayer.play();
+            thorvgLottiePlayer.stop();
             resolve(true);
           });
         };
@@ -419,13 +446,13 @@ function App() {
             isReady ||
             <div style={{ fontSize: 13, height: 200, overflowY: 'scroll', marginBottom: 32 }}>
               {
-                log.map((line, i) => <div style={{ marginBottom: 4 }}>{line}<br/></div>)
+                log.map((line, i) => <div key={i} style={{ marginBottom: 4, textAlign: 'left' }}>{line.split('\n').map((v, i) => <p key={i}>{v}</p>)}</div>)
               }
             </div>
           }
         </header>
         
-        <div style={{ display: 'block', overflowX: 'scroll', width: '100%', position: 'absolute', opacity: 0 }}>
+        <div style={{ display: 'block', overflowX: 'scroll', width: '100%', position: 'absolute', opacity: 0, top: 0, zIndex: -100 }}>
           <div className="thorvg-canvas" style={{ width: testingSize, height: testingSize }}>
           </div>
           <div className="lottie-canvas" style={{ width: testingSize, height: testingSize }}></div>

@@ -11,7 +11,8 @@ export const diffCanvas = async (canvas: any, targetCanvas: any): Promise<number
       const diffImg = document.querySelector('#diff-img') as any;
       diffImg.src = getImageDataUrl();
       
-      resolve(100 - misMatchPercentage);
+      const result = parseFloat((100 - misMatchPercentage).toFixed(2));
+      resolve(result);
     });
   });
 }
