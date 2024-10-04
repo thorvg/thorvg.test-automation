@@ -1969,13 +1969,14 @@
   dependencies:
     "@babel/runtime" "^7.12.5"
 
-"@thorvg/lottie-player@^1.0.0-beta.31":
-  version "1.0.0-beta.31"
-  resolved "https://registry.yarnpkg.com/@thorvg/lottie-player/-/lottie-player-1.0.0-beta.31.tgz#a319e4490226844ea50c974455dba02e7b8ef257"
-  integrity sha512-BFeD5hqhsUlrMCzYfhznZL6AmbrINK/NZ6ZajM5gxiACl76kDnj6KslGJkI0nd4B25dlrWeyCCxAOAtcW70fTg==
+"@thorvg/lottie-player@^1.0.0-beta.36":
+  version "1.0.0-beta.36"
+  resolved "https://registry.yarnpkg.com/@thorvg/lottie-player/-/lottie-player-1.0.0-beta.36.tgz#e219159d9dd7f5faf672dd548f88fd6683ff0a10"
+  integrity sha512-JzPPsVNwQqfu4wmTXOdHcxJyuPXTJYnewPUmMVpbZUBOZCYhmkxu2fJGkv4E4wql75CAwqHPLfyIdZJa0lvM4g==
   dependencies:
     lit "^3.1.0"
     url "^0.11.3"
+    uuid "^10.0.0"
 
 "@tootallnate/once@1":
   version "1.1.2"
@@ -10313,6 +10314,11 @@ utrie@^1.0.2:
   integrity sha512-1MLa5ouZiOmQzUbjbu9VmjLzn1QLXBhwpUa7kdLUQK+KQ5KA9I1vk5U4YHe/X2Ch7PYnJfWuWT+VbuxbGwljhw==
   dependencies:
     base64-arraybuffer "^1.0.2"
+
+uuid@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-10.0.0.tgz#5a95aa454e6e002725c79055fd42aaba30ca6294"
+  integrity sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==
 
 uuid@^8.3.2:
   version "8.3.2"
