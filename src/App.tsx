@@ -71,7 +71,7 @@ function App() {
       setLog(log.slice());
 
       // save result 
-      try {
+      // try {
         if (passed) {
           passedList.push(file.name);
           setPassedList(passedList.slice());
@@ -83,10 +83,10 @@ function App() {
           setFailedCnt(failedCnt);
           await saveError(logText);
         }
-      } catch (err) {
-        // TODO : save error
-        console.log(err);
-      }
+      // } catch (err) {
+      //   // TODO : save error
+      //   console.error('Error saving result:', err?.stack || err);
+      // }
 
       cnt += 1;
       setCnt(cnt);
@@ -199,7 +199,7 @@ function App() {
       resultText.style.width = '200px';
       resultRow?.appendChild(resultText);
   
-      const thorvgCanvas = document.querySelector("lottie-player")?.shadowRoot?.querySelector('canvas');
+      const thorvgCanvas = document.querySelector("lottie-player")?.querySelector('canvas');
       const lottieCanvas = document.querySelector('.lottie-canvas > canvas');
       const diffImg = document.querySelector('#diff-img');
       
@@ -244,7 +244,7 @@ function App() {
       resultText.innerText = logText;
       resultRow?.appendChild(resultText);
   
-      const thorvgCanvas = document.querySelector("lottie-player")?.shadowRoot?.querySelector('canvas');
+      const thorvgCanvas = document.querySelector("lottie-player")?.querySelector('canvas');
       const lottieCanvas = document.querySelector('.lottie-canvas > canvas');
       const diffImg = document.querySelector('#diff-img');
       
@@ -279,7 +279,7 @@ function App() {
   }
 
   const test = async () => {
-    const thorvgCanvas: any = document.querySelector("lottie-player")?.shadowRoot?.querySelector('canvas');
+    const thorvgCanvas: any = document.querySelector("lottie-player")?.querySelector('canvas');
     const lottieCanvas: any = document.querySelector(".lottie-canvas > canvas");
 
     // resembleJS diff
