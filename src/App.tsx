@@ -87,7 +87,7 @@ function App() {
       setLog(log.slice());
 
       // save result 
-      // try {
+      try {
         if (passed) {
           passedList.push(file.name);
           setPassedList(passedList.slice());
@@ -99,13 +99,14 @@ function App() {
           setFailedCnt(failedCnt);
           await saveError(resultText);
         }
-      // } catch (err) {
-      //   // TODO : save error
-      //   console.error('Error saving result:', err?.stack || err);
-      // }
+      } catch (err) {
+        // TODO : save error
+        console.error('Error saving result:', err);
+      }
 
       cnt += 1;
       setCnt(cnt);
+      (document.querySelector("lottie-player") as LottiePlayer).destroy();
     }
 
     exportToPDF();
