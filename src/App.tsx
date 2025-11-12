@@ -179,8 +179,7 @@ function App() {
       setCurrentFile(file.name);
       setCurrentCompatibility('Checking...');
       const finish = () => {
-        cnt += 1;
-        setCnt(cnt);
+        setCnt((prev) => prev + 1);
         (document.querySelector("lottie-player") as LottiePlayer).destroy();
       };
 
@@ -1160,7 +1159,7 @@ function App() {
           <div className="thorvg-canvas" style={{ position: 'fixed', width: testingSize, height: testingSize }}>
           </div>
           <div className="lottie-canvas" style={{ width: testingSize, height: testingSize }}></div>
-          <img id="diff-img" alt="Image diff" width={testingSize} height={testingSize} />
+          <img id="diff-img" alt="diff" width={testingSize} height={testingSize} />
         </div>
       </div>
 
