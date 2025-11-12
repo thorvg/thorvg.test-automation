@@ -30,6 +30,8 @@ let thorvgLottiePlayer: LottiePlayer;
 function App() {
   const initialized = useRef(false);
   const [version, setVersion] = useState('');
+  const [thorvgRenderer, setThorvgRenderer] = useState<'sw' | 'wg'>('sw');
+  const [isFrameTestingEnabled, setIsFrameTestingEnabled] = useState(true);
 
   const [uploaded, setUploaded] = useState(false);
   const [fileLength, setFileLength] = useState(0);
@@ -53,11 +55,52 @@ function App() {
       return;
     }
 
+    const params = new URLSearchParams(window.location.search);
+    const rendererParam = params.get('renderer');
+    const normalizedRenderer = rendererParam?.toLowerCase();
+    if (normalizedRenderer === 'sw' || normalizedRenderer === 'wg') {
+      setThorvgRenderer(normalizedRenderer);
+    }
+
+    const frameParam = params.get('frameTest');
+    const normalizedFrameParam = frameParam?.toLowerCase();
+    if (normalizedFrameParam === 'on') {
+      setIsFrameTestingEnabled(true);
+    } else if (normalizedFrameParam === 'off') {
+      setIsFrameTestingEnabled(false);
+    }
+
     // check debug mode from query param
     isDebug = window.location.href.includes('debug');
     initialized.current = true;
     loadVersion();
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const rendererValue = thorvgRenderer;
+    const frameValue = isFrameTestingEnabled ? 'on' : 'off';
+
+    let shouldUpdate = false;
+
+    if (params.get('renderer') !== rendererValue) {
+      params.set('renderer', rendererValue);
+      shouldUpdate = true;
+    }
+
+    if (params.get('frameTest') !== frameValue) {
+      params.set('frameTest', frameValue);
+      shouldUpdate = true;
+    }
+
+    if (!shouldUpdate) {
+      return;
+    }
+
+    const queryString = params.toString();
+    const newUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ''}${window.location.hash}`;
+    window.history.replaceState({}, '', newUrl);
+  }, [thorvgRenderer, isFrameTestingEnabled]);
 
   const start = async (fileList: any) => {
     let logText = '';
@@ -191,9 +234,17 @@ function App() {
 
         const results = [];
 
-        // get frames (for 0%, 25%, 50%, 75%, 100%)
-        const totalFrame = thorvgLottiePlayer.totalFrame;
-        const frameList = [0, Math.floor(totalFrame / 4), Math.floor(totalFrame / 2), Math.floor(totalFrame * 3 / 4), totalFrame];
+        const rawTotalFrame = thorvgLottiePlayer.totalFrame;
+        const totalFrame =
+          typeof rawTotalFrame === 'number' && Number.isFinite(rawTotalFrame)
+            ? Math.max(0, Math.floor(rawTotalFrame))
+            : 0;
+        const baseFrameList = isFrameTestingEnabled
+          ? [0, Math.floor(totalFrame / 4), Math.floor(totalFrame / 2), Math.floor(totalFrame * 3 / 4), totalFrame]
+          : [0];
+        const frameList = Array.from(
+          new Set(baseFrameList.map((frame) => Math.min(Math.max(Math.floor(frame), 0), totalFrame))),
+        );
 
         console.log('Total frame: ', totalFrame);
         for (const frame of frameList) {
@@ -352,6 +403,10 @@ function App() {
         thorvgLottiePlayer = document.createElement('lottie-player') as LottiePlayer;
         thorvgLottiePlayer.style.width = `${testingSize}px`;
         thorvgLottiePlayer.style.height = `${testingSize}px`;
+        thorvgLottiePlayer.renderConfig = {
+          // @ts-ignore
+          renderer: thorvgRenderer, // 'sw' | 'wg'
+        };
         thorvgCanvas.appendChild(thorvgLottiePlayer);
 
         const blob = new Blob([json], {type:"application/json"});
@@ -401,6 +456,41 @@ function App() {
               }
             </p>
           }
+
+          <div
+            className="control-panel"
+            style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'center', marginTop: 16, marginBottom: 16 }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <label htmlFor="thorvg-renderer-select" style={{ fontSize: 14 }}>ThorVG Renderer</label>
+              <select
+                id="thorvg-renderer-select"
+                value={thorvgRenderer}
+                onChange={(event) => setThorvgRenderer(event.target.value as 'sw' | 'wg')}
+                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #bdbdbd' }}
+              >
+                <option value="sw">SW</option>
+                <option value="wg">WG</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 14 }}>Frame-by-frame Test</span>
+              <button
+                type="button"
+                onClick={() => setIsFrameTestingEnabled((prev) => !prev)}
+                style={{
+                  padding: '4px 12px',
+                  borderRadius: 4,
+                  border: '1px solid #bdbdbd',
+                  backgroundColor: isFrameTestingEnabled ? '#4caf50' : '#f44336',
+                  color: '#fff',
+                  cursor: 'pointer',
+                }}
+              >
+                {isFrameTestingEnabled ? 'ON' : 'OFF'}
+              </button>
+            </div>
+          </div>
 
           {
             uploaded ||
