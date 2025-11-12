@@ -23,6 +23,17 @@ interface SimiliarityResult {
   frames: number[];
 }
 
+type TestStatus = 'passed' | 'failed';
+
+interface LogEntry {
+  id: string;
+  name: string;
+  status: TestStatus;
+  average: number;
+  frames: number[];
+  timestamp: number;
+}
+
 let isDebug = false;
 let anim: any = null;
 let thorvgLottiePlayer: LottiePlayer;
@@ -46,7 +57,7 @@ function App() {
 
   let [cnt, setCnt] = useState(0);
   let [failedCnt, setFailedCnt] = useState(0);
-  let [log, setLog] = useState<string[]>([]);
+  const [log, setLog] = useState<LogEntry[]>([]);
 
   const failedFilesRef = useRef<{ name: string; file: File }[]>([]);
   const fileUrlMap = useRef<Map<File, string>>(new Map());
@@ -146,11 +157,20 @@ function App() {
     return url;
   };
 
+  const formatTimestamp = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    const millis = date.getMilliseconds().toString().padStart(3, '0');
+    return `${hours}:${minutes}:${seconds}.${millis}`;
+  };
+
   const start = async (fileList: any) => {
-    let logText = '';
     failedFilesRef.current = [];
     fileUrlMap.current.forEach((url) => URL.revokeObjectURL(url));
     fileUrlMap.current.clear();
+    setLog([]);
 
     for (const file of fileList) {
       setCurrentFile(file.name);
@@ -165,17 +185,29 @@ function App() {
       const formattedAverage = average.toFixed(2);
       const passed = average >= successPercentage;
 
+      const status: TestStatus = passed ? 'passed' : 'failed';
+      const entryTimestamp = Date.now();
+      const frameResults = [...frames];
+
       const resultText = `${passed ? '✅' : '❗'} ${file.name} - Similarity: ${formattedAverage}%`;
-      logText = resultText;
-      for (let i = 0; i < frames.length; i++) {
-        logText += `\n * Frame ${i} : ${frames[i]}%`;
-      }
+      const frameDetails = frameResults
+        .map((value, index) => ` * Frame ${index} : ${value}%`)
+        .join('\n');
+      const logText = `${resultText}${frameDetails ? `\n${frameDetails}` : ''}`;
 
       setCurrentCompatibility(`${formattedAverage}%`);
       console.info(logText);
-      log.push(logText);
-
-      setLog(log.slice());
+      setLog((prev) => [
+        ...prev,
+        {
+          id: `${entryTimestamp}-${Math.random().toString(16).slice(2, 8)}`,
+          name: file.name,
+          status,
+          average: parseFloat(formattedAverage),
+          frames: frameResults,
+          timestamp: entryTimestamp,
+        },
+      ]);
 
       // save result 
       try {
@@ -701,10 +733,225 @@ function App() {
           
           {
             isReady ||
-            <div style={{ fontSize: 13, height: 200, overflowY: 'scroll', marginBottom: 32 }}>
-              {
-                log.map((line, i) => <div key={i} style={{ marginBottom: 4, textAlign: 'left' }}>{line.split('\n').map((v, i) => <p key={i}>{v}</p>)}</div>)
-              }
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
+              <div
+                style={{
+                  width: '100%',
+                  maxWidth: 720,
+                  borderRadius: 16,
+                  padding: 20,
+                  background: 'linear-gradient(135deg, #0f172a 0%, #111827 100%)',
+                  border: '1px solid rgba(148, 163, 184, 0.2)',
+                  boxShadow: '0 18px 40px rgba(15, 23, 42, 0.45)',
+                  color: '#e2e8f0',
+                  fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 12,
+                    gap: 16,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      letterSpacing: '0.16em',
+                      color: '#94a3b8',
+                    }}
+                  >
+                    TEST FEED
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 500,
+                      letterSpacing: '0.08em',
+                      color: '#38bdf8',
+                    }}
+                  >
+                    {fileLength > 0 ? `PROGRESS ${cnt}/${fileLength}` : `ENTRIES ${log.length}`}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    maxHeight: 260,
+                    overflowY: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 12,
+                    paddingRight: 4,
+                  }}
+                >
+                  {
+                    log.length === 0
+                      ? (
+                        <div
+                          style={{
+                            padding: '16px 0',
+                            textAlign: 'center',
+                            fontSize: 13,
+                            color: '#94a3b8',
+                            fontFamily: 'Menlo, Consolas, "SFMono-Regular", monospace',
+                          }}
+                        >
+                          Waiting for test results…
+                        </div>
+                      )
+                      : log.slice().reverse().map((entry) => {
+                          const statusColor = entry.status === 'passed' ? '#4caf50' : '#f44336';
+                          const statusLabel = entry.status === 'passed' ? 'PASS' : 'FAIL';
+                          const gradientAccent = entry.status === 'passed'
+                            ? 'rgba(76, 175, 80, 0.12)'
+                            : 'rgba(244, 67, 54, 0.12)';
+                          const frameBadgeBackground = entry.status === 'passed'
+                            ? 'rgba(76, 175, 80, 0.22)'
+                            : 'rgba(244, 67, 54, 0.22)';
+                          return (
+                            <div
+                              key={entry.id}
+                              style={{
+                                borderRadius: 12,
+                                border: `1px solid ${statusColor}33`,
+                                background: `linear-gradient(135deg, ${gradientAccent} 0%, rgba(17, 24, 39, 0.9) 100%)`,
+                                padding: '14px 16px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 10,
+                                boxShadow: '0 12px 28px rgba(15, 23, 42, 0.45)',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  gap: 12,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 10,
+                                    minWidth: 0,
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      padding: '2px 10px',
+                                      borderRadius: 999,
+                                      letterSpacing: '0.18em',
+                                      color: '#0f172a',
+                                      backgroundColor: statusColor,
+                                      fontFamily: 'Menlo, Consolas, "SFMono-Regular", monospace',
+                                    }}
+                                  >
+                                    {statusLabel}
+                                  </span>
+                                  <span
+                                    style={{
+                                      fontSize: 14,
+                                      fontWeight: 600,
+                                      color: '#e2e8f0',
+                                      maxWidth: 360,
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                    title={entry.name}
+                                  >
+                                    {entry.name}
+                                  </span>
+                                </div>
+                                <span
+                                  style={{
+                                    fontSize: 12,
+                                    fontFamily: 'Menlo, Consolas, "SFMono-Regular", monospace',
+                                    color: '#94a3b8',
+                                  }}
+                                >
+                                  {formatTimestamp(entry.timestamp)}
+                                </span>
+                              </div>
+
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    fontSize: 12,
+                                    fontWeight: 500,
+                                    color: '#cbd5f5',
+                                  }}
+                                >
+                                  <span>Similarity</span>
+                                  <span style={{ fontFamily: 'Menlo, Consolas, "SFMono-Regular", monospace' }}>
+                                    {entry.average.toFixed(2)}%
+                                  </span>
+                                </div>
+                                <div
+                                  style={{
+                                    width: '100%',
+                                    height: 6,
+                                    borderRadius: 999,
+                                    background: 'rgba(148, 163, 184, 0.2)',
+                                    overflow: 'hidden',
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: `${Math.max(0, Math.min(entry.average, 100))}%`,
+                                      height: '100%',
+                                      background: statusColor,
+                                      transition: 'width 280ms ease-out',
+                                    }}
+                                  ></div>
+                                </div>
+                              </div>
+
+                              {
+                                entry.frames.length > 0 &&
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: 8,
+                                    fontSize: 11,
+                                    color: '#e2e8f0',
+                                  }}
+                                >
+                                  {
+                                    entry.frames.map((value, index) => (
+                                      <span
+                                        key={`${entry.id}-frame-${index}`}
+                                        style={{
+                                          padding: '4px 8px',
+                                          borderRadius: 8,
+                                          backgroundColor: frameBadgeBackground,
+                                          fontFamily: 'Menlo, Consolas, "SFMono-Regular", monospace',
+                                        }}
+                                      >
+                                        F{index}: {typeof value === 'number' ? value.toFixed(2) : value}%
+                                      </span>
+                                    ))
+                                  }
+                                </div>
+                              }
+                            </div>
+                          );
+                        })
+                  }
+                </div>
+              </div>
             </div>
           }
         </header>
