@@ -40,7 +40,7 @@ let thorvgLottiePlayer: LottiePlayer;
 function App() {
   const initialized = useRef(false);
   const [version, setVersion] = useState('');
-  const [thorvgRenderer, setThorvgRenderer] = useState<'sw' | 'wg'>('sw');
+  const [thorvgRenderer, setThorvgRenderer] = useState<'sw' | 'wg' | 'gl'>('sw');
   const [isFrameTestingEnabled, setIsFrameTestingEnabled] = useState(true);
   const [shouldAutoDownloadPdf, setShouldAutoDownloadPdf] = useState(false);
   const [shouldDownloadFailedZip, setShouldDownloadFailedZip] = useState(false);
@@ -77,7 +77,7 @@ function App() {
     const params = new URLSearchParams(window.location.search);
     const rendererParam = params.get('renderer');
     const normalizedRenderer = rendererParam?.toLowerCase();
-    if (normalizedRenderer === 'sw' || normalizedRenderer === 'wg') {
+    if (normalizedRenderer === 'sw' || normalizedRenderer === 'wg' || normalizedRenderer === 'gl') {
       setThorvgRenderer(normalizedRenderer);
     }
 
@@ -691,7 +691,7 @@ function App() {
         thorvgLottiePlayer.style.height = `${testingSize}px`;
         thorvgLottiePlayer.renderConfig = {
           // @ts-ignore
-          renderer: thorvgRenderer, // 'sw' | 'wg'
+          renderer: thorvgRenderer, // 'sw' | 'wg' | 'gl'
           enableDevicePixelRatio: true,
         };
         thorvgCanvas.appendChild(thorvgLottiePlayer);
@@ -757,10 +757,11 @@ function App() {
               <select
                 id="thorvg-renderer-select"
                 value={thorvgRenderer}
-                onChange={(event) => setThorvgRenderer(event.target.value as 'sw' | 'wg')}
+                onChange={(event) => setThorvgRenderer(event.target.value as 'sw' | 'wg' | 'gl')}
                 style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #bdbdbd' }}
               >
                 <option value="sw">SW</option>
+                <option value="gl">GL</option>
                 <option value="wg">WG</option>
               </select>
             </div>
