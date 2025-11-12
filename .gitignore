@@ -25,3 +25,5 @@ yarn-error.log*
 # cli
 /cli/node_modules
 /cli/package-lock.json
+chrome/
+*.pdf

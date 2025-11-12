@@ -51,3 +51,8 @@
   padding: 4px 8px;
   margin-top: -4px;
 }
+
+.status-badge {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.3s ease;
+}
