@@ -178,10 +178,17 @@ function App() {
     for (const file of fileList) {
       setCurrentFile(file.name);
       setCurrentCompatibility('Checking...');
+      const finish = () => {
+        cnt += 1;
+        setCnt(cnt);
+        (document.querySelector("lottie-player") as LottiePlayer).destroy();
+      };
 
       const res = await run(file);
       if (!res) {
-        // TODO Error
+        console.error('Error running test:', res);
+        finish();
+        continue;
       }
 
       const { average, frames } = res as SimiliarityResult;
@@ -231,9 +238,7 @@ function App() {
         console.error('Error saving result:', err);
       }
 
-      cnt += 1;
-      setCnt(cnt);
-      (document.querySelector("lottie-player") as LottiePlayer).destroy();
+      finish();
     }
 
     if (shouldAutoDownloadPdf && cnt > 0) {
