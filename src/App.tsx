@@ -49,6 +49,7 @@ function App() {
   let [log, setLog] = useState<string[]>([]);
 
   const failedFilesRef = useRef<{ name: string; file: File }[]>([]);
+  const fileUrlMap = useRef<Map<File, string>>(new Map());
 
   const hasDone = cnt !== 0 && cnt >= fileLength - 1;
   // const isTesting = fileLength > 0 && !hasDone;
@@ -134,9 +135,22 @@ function App() {
     window.history.replaceState({}, '', newUrl);
   }, [thorvgRenderer, isFrameTestingEnabled, shouldAutoDownloadPdf, shouldDownloadFailedZip]);
 
+  const getFileDownloadUrl = (file: File) => {
+    const cached = fileUrlMap.current.get(file);
+    if (cached) {
+      return cached;
+    }
+
+    const url = URL.createObjectURL(file);
+    fileUrlMap.current.set(file, url);
+    return url;
+  };
+
   const start = async (fileList: any) => {
     let logText = '';
     failedFilesRef.current = [];
+    fileUrlMap.current.forEach((url) => URL.revokeObjectURL(url));
+    fileUrlMap.current.clear();
 
     for (const file of fileList) {
       setCurrentFile(file.name);
@@ -148,15 +162,16 @@ function App() {
       }
 
       const { average, frames } = res as SimiliarityResult;
+      const formattedAverage = average.toFixed(2);
       const passed = average >= successPercentage;
 
-      const resultText = `${passed ? '✅' : '❗'} ${file.name} - Similarity: ${average}%`;
+      const resultText = `${passed ? '✅' : '❗'} ${file.name} - Similarity: ${formattedAverage}%`;
       logText = resultText;
       for (let i = 0; i < frames.length; i++) {
         logText += `\n * Frame ${i} : ${frames[i]}%`;
       }
 
-      setCurrentCompatibility('' + average + '%');
+      setCurrentCompatibility(`${formattedAverage}%`);
       console.info(logText);
       log.push(logText);
 
@@ -167,14 +182,14 @@ function App() {
         if (passed) {
           passedList.push(file.name);
           setPassedList(passedList.slice());
-          await saveResult(resultText);
+          await saveResult(resultText, file, formattedAverage);
         } else {
           failedList.push(file.name);
           setFailedList(failedList.slice());
           failedCnt += 1;
           setFailedCnt(failedCnt);
           failedFilesRef.current.push({ name: file.name, file });
-          await saveError(resultText);
+          await saveError(resultText, file, formattedAverage);
         }
       } catch (err) {
         // TODO : save error
@@ -328,16 +343,61 @@ function App() {
     })
   };
 
-  const saveResult = async (logText: string): Promise<void> => {
+  const createNameCell = (statusIcon: string, file: File, logText: string, formattedAverage: string) => {
+    const container = document.createElement('div');
+    container.style.width = '200px';
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.alignItems = 'flex-start';
+    container.style.gap = '4px';
+    container.style.textAlign = 'left';
+    container.title = logText;
+
+    const titleRow = document.createElement('div');
+    titleRow.style.display = 'flex';
+    titleRow.style.alignItems = 'center';
+    titleRow.style.gap = '6px';
+    titleRow.style.width = '100%';
+    titleRow.style.maxWidth = '200px';
+
+    const iconSpan = document.createElement('span');
+    iconSpan.textContent = statusIcon;
+    titleRow.appendChild(iconSpan);
+
+    const link = document.createElement('a');
+    link.href = getFileDownloadUrl(file);
+    link.download = file.name;
+    link.textContent = file.name;
+    link.style.flex = '1';
+    link.style.minWidth = '0';
+    link.style.display = 'inline-block';
+    link.style.overflow = 'hidden';
+    link.style.textOverflow = 'ellipsis';
+    link.style.whiteSpace = 'nowrap';
+    link.style.color = '#1976d2';
+    link.style.textDecoration = 'none';
+    link.setAttribute('role', 'link');
+    titleRow.appendChild(link);
+
+    container.appendChild(titleRow);
+
+    const similaritySpan = document.createElement('span');
+    similaritySpan.textContent = `Similarity: ${formattedAverage}%`;
+    similaritySpan.style.fontSize = '12px';
+    similaritySpan.style.color = '#616161';
+    container.appendChild(similaritySpan);
+
+    return container;
+  };
+
+  const saveResult = async (logText: string, file: File, formattedAverage: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       const resultBoard = document.querySelector('.result');
       const resultRow = document.querySelector('.result-row')?.cloneNode(true) as any;
       resultBoard?.appendChild(resultRow);
   
-      const resultText = document.createElement('span');
-      resultText.innerText = logText;
-      resultText.style.width = '200px';
-      resultRow?.appendChild(resultText);
+      const nameCell = createNameCell('✅', file, logText, formattedAverage);
+      resultRow?.appendChild(nameCell);
   
       const thorvgCanvas = document.querySelector("lottie-player")?.querySelector('canvas');
       const lottieCanvas = document.querySelector('.lottie-canvas > canvas');
@@ -373,16 +433,14 @@ function App() {
     });
   }
 
-  const saveError = async (logText: string): Promise<void> => {
+  const saveError = async (logText: string, file: File, formattedAverage: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       const resultBoard = document.querySelector('.result-error');
       const resultRow = document.querySelector('.result-error-row')?.cloneNode(true) as any;
       resultBoard?.appendChild(resultRow);
   
-      const resultText = document.createElement('span');
-      resultText.style.width = '200px';
-      resultText.innerText = logText;
-      resultRow?.appendChild(resultText);
+      const nameCell = createNameCell('❗', file, logText, formattedAverage);
+      resultRow?.appendChild(nameCell);
   
       const thorvgCanvas = document.querySelector("lottie-player")?.querySelector('canvas');
       const lottieCanvas = document.querySelector('.lottie-canvas > canvas');
