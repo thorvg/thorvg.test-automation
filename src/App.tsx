@@ -379,6 +379,108 @@ function App() {
     })
   };
 
+  const createHoverableCanvasWrapper = (canvas: HTMLCanvasElement, jsonData: string, type: 'thorvg' | 'lottie') => {
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'relative';
+    wrapper.style.display = 'inline-block';
+    wrapper.style.width = `${size}px`;
+    wrapper.style.height = `${size}px`;
+    wrapper.style.cursor = 'pointer';
+    wrapper.appendChild(canvas);
+
+    let overlay: HTMLDivElement | null = null;
+    let animInstance: any = null;
+    let playerInstance: LottiePlayer | null = null;
+
+    const createOverlay = () => {
+      if (overlay) return;
+
+      const overlaySize = 300; // Enlarged size for overlay
+      overlay = document.createElement('div');
+      overlay.style.position = 'absolute';
+      overlay.style.top = '50%';
+      overlay.style.left = '50%';
+      overlay.style.transform = 'translate(-50%, -50%)';
+      overlay.style.width = `${overlaySize}px`;
+      overlay.style.height = `${overlaySize}px`;
+      overlay.style.zIndex = '1000';
+      overlay.style.border = '2px solid #4caf50';
+      overlay.style.borderRadius = '8px';
+      overlay.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3)';
+      overlay.style.backgroundColor = '#fff';
+      overlay.style.pointerEvents = 'none';
+
+      try {
+        const animData = JSON.parse(jsonData);
+
+        if (type === 'thorvg') {
+          playerInstance = document.createElement('lottie-player') as LottiePlayer;
+          playerInstance.style.width = `${overlaySize}px`;
+          playerInstance.style.height = `${overlaySize}px`;
+          playerInstance.renderConfig = {
+            // @ts-ignore
+            renderer: thorvgRenderer,
+          };
+          overlay.appendChild(playerInstance);
+          wrapper.appendChild(overlay);
+
+          playerInstance.src = animData;
+          playerInstance.addEventListener('load', () => {
+            playerInstance?.play();
+          });
+        } else {
+          const container = document.createElement('div');
+          container.style.width = `${overlaySize}px`;
+          container.style.height = `${overlaySize}px`;
+          container.style.overflow = 'hidden';
+          overlay.appendChild(container);
+          wrapper.appendChild(overlay);
+
+          // Add to DOM first, then initialize lottie-web
+          setTimeout(() => {
+            animInstance = lottieWeb.loadAnimation({
+              container: container,
+              renderer: 'canvas',
+              loop: true,
+              autoplay: true,
+              animationData: animData,
+              rendererSettings: {
+                clearCanvas: true,
+                preserveAspectRatio: 'xMidYMid meet',
+              },
+            });
+          }, 10);
+        }
+      } catch (err) {
+        console.error('Error creating animation overlay:', err);
+      }
+    };
+
+    const removeOverlay = () => {
+      if (!overlay) return;
+
+      if (animInstance) {
+        animInstance.destroy();
+        animInstance = null;
+      }
+
+      if (playerInstance) {
+        playerInstance.destroy();
+        playerInstance = null;
+      }
+
+      if (overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
+      }
+      overlay = null;
+    };
+
+    wrapper.addEventListener('mouseenter', createOverlay);
+    wrapper.addEventListener('mouseleave', removeOverlay);
+
+    return wrapper;
+  };
+
   const createNameCell = (statusIcon: string, file: File, logText: string, formattedAverage: string) => {
     const container = document.createElement('div');
     container.style.width = '200px';
@@ -427,14 +529,14 @@ function App() {
   };
 
   const saveResult = async (logText: string, file: File, formattedAverage: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const resultBoard = document.querySelector('.result');
       const resultRow = document.querySelector('.result-row')?.cloneNode(true) as any;
       resultBoard?.appendChild(resultRow);
-  
+
       const nameCell = createNameCell('✅', file, logText, formattedAverage);
       resultRow?.appendChild(nameCell);
-  
+
       const thorvgCanvas = document.querySelector("lottie-player")?.querySelector('canvas');
       const lottieCanvas = document.querySelector('.lottie-canvas > canvas');
       const diffImg = document.querySelector('#diff-img');
@@ -455,33 +557,44 @@ function App() {
 
       diffCloneImg.width = size;
       diffCloneImg.height = size;
-  
+
       thorvgCloneCanvas.getContext('2d').drawImage(thorvgCanvas, 0, 0, size, size);
       lottieCloneCanvas.getContext('2d').drawImage(lottieCanvas, 0, 0, size, size);
-  
-      resultRow?.appendChild(thorvgCloneCanvas);
-      resultRow?.appendChild(lottieCloneCanvas);
-      resultRow?.appendChild(diffCloneImg);
 
-      setTimeout(() => {
-        resolve();
-      }, 150);
+      // Read JSON data from file
+      const reader = new FileReader();
+      reader.readAsText(file);
+      reader.onload = () => {
+        const jsonData = reader.result as string;
+
+        // Create wrapper containers with hover functionality
+        const thorvgWrapper = createHoverableCanvasWrapper(thorvgCloneCanvas, jsonData, 'thorvg');
+        const lottieWrapper = createHoverableCanvasWrapper(lottieCloneCanvas, jsonData, 'lottie');
+
+        resultRow?.appendChild(thorvgWrapper);
+        resultRow?.appendChild(lottieWrapper);
+        resultRow?.appendChild(diffCloneImg);
+
+        setTimeout(() => {
+          resolve();
+        }, 150);
+      };
     });
   }
 
   const saveError = async (logText: string, file: File, formattedAverage: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const resultBoard = document.querySelector('.result-error');
       const resultRow = document.querySelector('.result-error-row')?.cloneNode(true) as any;
       resultBoard?.appendChild(resultRow);
-  
+
       const nameCell = createNameCell('❗', file, logText, formattedAverage);
       resultRow?.appendChild(nameCell);
-  
+
       const thorvgCanvas = document.querySelector("lottie-player")?.querySelector('canvas');
       const lottieCanvas = document.querySelector('.lottie-canvas > canvas');
       const diffImg = document.querySelector('#diff-img');
-      
+
       const thorvgCloneCanvas = thorvgCanvas?.cloneNode(true) as any;
       const lottieCloneCanvas = lottieCanvas?.cloneNode(true) as any;
       const diffCloneImg = diffImg?.cloneNode(true) as any;
@@ -498,17 +611,28 @@ function App() {
 
       diffCloneImg.width = size;
       diffCloneImg.height = size;
-  
+
       thorvgCloneCanvas.getContext('2d').drawImage(thorvgCanvas, 0, 0, size, size);
       lottieCloneCanvas.getContext('2d').drawImage(lottieCanvas, 0, 0, size, size);
-  
-      resultRow?.appendChild(thorvgCloneCanvas);
-      resultRow?.appendChild(lottieCloneCanvas);
-      resultRow?.appendChild(diffCloneImg);
 
-      setTimeout(() => {
-        resolve();
-      }, 150);
+      // Read JSON data from file
+      const reader = new FileReader();
+      reader.readAsText(file);
+      reader.onload = () => {
+        const jsonData = reader.result as string;
+
+        // Create wrapper containers with hover functionality
+        const thorvgWrapper = createHoverableCanvasWrapper(thorvgCloneCanvas, jsonData, 'thorvg');
+        const lottieWrapper = createHoverableCanvasWrapper(lottieCloneCanvas, jsonData, 'lottie');
+
+        resultRow?.appendChild(thorvgWrapper);
+        resultRow?.appendChild(lottieWrapper);
+        resultRow?.appendChild(diffCloneImg);
+
+        setTimeout(() => {
+          resolve();
+        }, 150);
+      };
     });
   }
 
@@ -748,6 +872,12 @@ function App() {
                     }}></div>
                   </div>
                 </div>
+
+                {isRunning && (
+                  <div style={{ textAlign: 'center', marginTop: 16 }}>
+                    <img src={logo} className="App-logo" alt="logo" />
+                  </div>
+                )}
               </div>
             </div>
           )}
