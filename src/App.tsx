@@ -1159,7 +1159,7 @@ function App() {
         </header>
         
         <div style={{ display: 'block', overflowX: 'scroll', width: '100%', position: 'absolute', opacity: 0, top: 0, zIndex: -100 }}>
-          <div className="thorvg-canvas" style={{ width: testingSize, height: testingSize }}>
+          <div className="thorvg-canvas" style={{ position: 'fixed', width: testingSize, height: testingSize }}>
           </div>
           <div className="lottie-canvas" style={{ width: testingSize, height: testingSize }}></div>
           <img id="diff-img" alt="Image diff" width={testingSize} height={testingSize} />
