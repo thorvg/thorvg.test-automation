@@ -1,7 +1,6 @@
 import './App.css';
 import lottieWeb from 'lottie-web';
 import { useEffect, useRef, useState } from 'react';
-import logo from './logo.svg';
 import { BlobReader, BlobWriter, TextWriter, ZipReader, ZipWriter } from "@zip.js/zip.js";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -874,12 +873,6 @@ function App() {
                     }}></div>
                   </div>
                 </div>
-
-                {isRunning && (
-                  <div style={{ textAlign: 'center', marginTop: 16 }}>
-                    <img src={logo} className="App-logo" alt="logo" />
-                  </div>
-                )}
               </div>
             </div>
           )}
