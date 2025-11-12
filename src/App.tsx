@@ -45,7 +45,7 @@ function App() {
   let [log, setLog] = useState<string[]>([]);
 
   const hasDone = cnt !== 0 && cnt >= fileLength - 1;
-  const isTesting = fileLength > 0 && !hasDone;
+  // const isTesting = fileLength > 0 && !hasDone;
   const isReady = fileLength < 1;
 
   useEffect(() => {
@@ -467,7 +467,7 @@ function App() {
           <div className="thorvg-canvas" style={{ width: testingSize, height: testingSize }}>
           </div>
           <div className="lottie-canvas" style={{ width: testingSize, height: testingSize }}></div>
-          <img id="diff-img" width={testingSize} height={testingSize} />
+          <img id="diff-img" alt="Image diff" width={testingSize} height={testingSize} />
         </div>
       </div>
 
