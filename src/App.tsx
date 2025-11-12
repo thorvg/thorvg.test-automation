@@ -420,6 +420,7 @@ function App() {
           playerInstance.renderConfig = {
             // @ts-ignore
             renderer: thorvgRenderer,
+            enableDevicePixelRatio: true,
           };
           overlay.appendChild(playerInstance);
           wrapper.appendChild(overlay);
@@ -688,6 +689,7 @@ function App() {
         thorvgLottiePlayer.renderConfig = {
           // @ts-ignore
           renderer: thorvgRenderer, // 'sw' | 'wg'
+          enableDevicePixelRatio: true,
         };
         thorvgCanvas.appendChild(thorvgLottiePlayer);
 
