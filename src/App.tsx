@@ -2,7 +2,7 @@ import './App.css';
 import lottieWeb from 'lottie-web';
 import { useEffect, useRef, useState } from 'react';
 import logo from './logo.svg';
-import { BlobReader, TextWriter, ZipReader } from "@zip.js/zip.js";
+import { BlobReader, BlobWriter, TextWriter, ZipReader, ZipWriter } from "@zip.js/zip.js";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { FileUploader } from "react-drag-drop-files";
@@ -32,6 +32,8 @@ function App() {
   const [version, setVersion] = useState('');
   const [thorvgRenderer, setThorvgRenderer] = useState<'sw' | 'wg'>('sw');
   const [isFrameTestingEnabled, setIsFrameTestingEnabled] = useState(true);
+  const [shouldAutoDownloadPdf, setShouldAutoDownloadPdf] = useState(false);
+  const [shouldDownloadFailedZip, setShouldDownloadFailedZip] = useState(false);
 
   const [uploaded, setUploaded] = useState(false);
   const [fileLength, setFileLength] = useState(0);
@@ -45,6 +47,8 @@ function App() {
   let [cnt, setCnt] = useState(0);
   let [failedCnt, setFailedCnt] = useState(0);
   let [log, setLog] = useState<string[]>([]);
+
+  const failedFilesRef = useRef<{ name: string; file: File }[]>([]);
 
   const hasDone = cnt !== 0 && cnt >= fileLength - 1;
   // const isTesting = fileLength > 0 && !hasDone;
@@ -70,6 +74,22 @@ function App() {
       setIsFrameTestingEnabled(false);
     }
 
+    const autoPdfParam = params.get('autoPdf');
+    const normalizedAutoPdfParam = autoPdfParam?.toLowerCase();
+    if (normalizedAutoPdfParam === 'on') {
+      setShouldAutoDownloadPdf(true);
+    } else if (normalizedAutoPdfParam === 'off') {
+      setShouldAutoDownloadPdf(false);
+    }
+
+    const failedZipParam = params.get('failedZip');
+    const normalizedFailedZipParam = failedZipParam?.toLowerCase();
+    if (normalizedFailedZipParam === 'on') {
+      setShouldDownloadFailedZip(true);
+    } else if (normalizedFailedZipParam === 'off') {
+      setShouldDownloadFailedZip(false);
+    }
+
     // check debug mode from query param
     isDebug = window.location.href.includes('debug');
     initialized.current = true;
@@ -80,6 +100,8 @@ function App() {
     const params = new URLSearchParams(window.location.search);
     const rendererValue = thorvgRenderer;
     const frameValue = isFrameTestingEnabled ? 'on' : 'off';
+    const autoPdfValue = shouldAutoDownloadPdf ? 'on' : 'off';
+    const failedZipValue = shouldDownloadFailedZip ? 'on' : 'off';
 
     let shouldUpdate = false;
 
@@ -93,6 +115,16 @@ function App() {
       shouldUpdate = true;
     }
 
+    if (params.get('autoPdf') !== autoPdfValue) {
+      params.set('autoPdf', autoPdfValue);
+      shouldUpdate = true;
+    }
+
+    if (params.get('failedZip') !== failedZipValue) {
+      params.set('failedZip', failedZipValue);
+      shouldUpdate = true;
+    }
+
     if (!shouldUpdate) {
       return;
     }
@@ -100,10 +132,11 @@ function App() {
     const queryString = params.toString();
     const newUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ''}${window.location.hash}`;
     window.history.replaceState({}, '', newUrl);
-  }, [thorvgRenderer, isFrameTestingEnabled]);
+  }, [thorvgRenderer, isFrameTestingEnabled, shouldAutoDownloadPdf, shouldDownloadFailedZip]);
 
   const start = async (fileList: any) => {
     let logText = '';
+    failedFilesRef.current = [];
 
     for (const file of fileList) {
       setCurrentFile(file.name);
@@ -140,6 +173,7 @@ function App() {
           setFailedList(failedList.slice());
           failedCnt += 1;
           setFailedCnt(failedCnt);
+          failedFilesRef.current.push({ name: file.name, file });
           await saveError(resultText);
         }
       } catch (err) {
@@ -152,8 +186,38 @@ function App() {
       (document.querySelector("lottie-player") as LottiePlayer).destroy();
     }
 
-    exportToPDF();
+    if (shouldAutoDownloadPdf && cnt > 0) {
+      await exportToPDF();
+    }
+    if (shouldDownloadFailedZip && failedFilesRef.current.length > 0) {
+      await downloadFailedZip();
+    }
     saveDebugResult();
+  };
+
+  const downloadFailedZip = async () => {
+    if (!failedFilesRef.current.length) {
+      return;
+    }
+
+    try {
+      const zipWriter = new ZipWriter(new BlobWriter("application/zip"));
+      for (const { name, file } of failedFilesRef.current) {
+        await zipWriter.add(name, new BlobReader(file));
+      }
+      const blob = await zipWriter.close();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      anchor.download = `thorvg-failed-${timestamp}.zip`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error creating failed zip:', err);
+    }
   };
 
   const exportToPDF = async () => {
@@ -488,6 +552,40 @@ function App() {
                 }}
               >
                 {isFrameTestingEnabled ? 'ON' : 'OFF'}
+              </button>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 14 }}>Auto-download PDF</span>
+              <button
+                type="button"
+                onClick={() => setShouldAutoDownloadPdf((prev) => !prev)}
+                style={{
+                  padding: '4px 12px',
+                  borderRadius: 4,
+                  border: '1px solid #bdbdbd',
+                  backgroundColor: shouldAutoDownloadPdf ? '#4caf50' : '#f44336',
+                  color: '#fff',
+                  cursor: 'pointer',
+                }}
+              >
+                {shouldAutoDownloadPdf ? 'ON' : 'OFF'}
+              </button>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 14 }}>Download failed set (.zip)</span>
+              <button
+                type="button"
+                onClick={() => setShouldDownloadFailedZip((prev) => !prev)}
+                style={{
+                  padding: '4px 12px',
+                  borderRadius: 4,
+                  border: '1px solid #bdbdbd',
+                  backgroundColor: shouldDownloadFailedZip ? '#4caf50' : '#f44336',
+                  color: '#fff',
+                  cursor: 'pointer',
+                }}
+              >
+                {shouldDownloadFailedZip ? 'ON' : 'OFF'}
               </button>
             </div>
           </div>
