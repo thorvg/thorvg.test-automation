@@ -65,6 +65,10 @@ function App() {
   const hasDone = cnt !== 0 && cnt >= fileLength - 1;
   // const isTesting = fileLength > 0 && !hasDone;
   const isReady = fileLength < 1;
+  const isRunning = fileLength > 0 && !hasDone;
+  const status = isReady ? 'IDLE' : isRunning ? 'RUNNING' : 'COMPLETE';
+  const passRate = cnt > 0 ? Math.round(((cnt - failedCnt) / cnt) * 100) : 0;
+  const progressPercent = fileLength > 0 ? Math.round((cnt / fileLength) * 100) : 0;
 
   useEffect(() => {
     if (initialized.current) {
@@ -595,25 +599,29 @@ function App() {
   return (
     <>
       <div className="App">
-        <header className="App-header">
-          {
-            isReady ? <p>ThorVG Test Automation <span className="thorvg-version">v{version}</span></p>
-            :
-            hasDone ? <p>DONE <br/>(Passed: {cnt - failedCnt} / {cnt})</p>
-            :
-            <p>
-              {curerntFile} - {currentCompatibility}
-              
-              {
-                (fileLength > 0 && !hasDone) &&
-                <img src={logo} className="App-logo" alt="logo" />
-              }
-            </p>
-          }
+        <header className="App-header" style={{ paddingBottom: uploaded ? 0 : 64 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, marginTop: 64 }}>
+            <p style={{ margin: 0, fontSize: 28, fontWeight: 'bold' }}>ThorVG Test Automation</p>
+            <span className="thorvg-version">v{version}</span>
+            <span
+              className="status-badge"
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                padding: '4px 12px',
+                borderRadius: 12,
+                letterSpacing: '0.05em',
+                color: '#0f172a',
+                backgroundColor: status === 'IDLE' ? '#94a3b8' : status === 'RUNNING' ? '#38bdf8' : '#4caf50',
+              }}
+            >
+              {status}
+            </span>
+          </div>
 
           <div
             className="control-panel"
-            style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'center', marginTop: 16, marginBottom: 16 }}
+            style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'center', marginTop: 0, marginBottom: 16 }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <label htmlFor="thorvg-renderer-select" style={{ fontSize: 14 }}>ThorVG Renderer</label>
@@ -680,6 +688,70 @@ function App() {
             </div>
           </div>
 
+          {!isReady && (
+            <div style={{ width: '100%', maxWidth: 720, marginBottom: 24, marginTop: 16 }}>
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: 12,
+                padding: 20,
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 20, flexWrap: 'wrap', gap: 16 }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 4 }}>Queue</div>
+                    <div style={{ fontSize: 24, fontWeight: 'bold' }}>{fileLength}</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 4 }}>Processed</div>
+                    <div style={{ fontSize: 24, fontWeight: 'bold' }}>{cnt}</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, color: '#4caf50', marginBottom: 4 }}>Success</div>
+                    <div style={{ fontSize: 24, fontWeight: 'bold', color: '#4caf50' }}>{cnt - failedCnt}</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, color: '#f44336', marginBottom: 4 }}>Failed</div>
+                    <div style={{ fontSize: 24, fontWeight: 'bold', color: '#f44336' }}>{failedCnt}</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 4 }}>Pass Rate</div>
+                    <div style={{ fontSize: 24, fontWeight: 'bold' }}>{passRate}%</div>
+                  </div>
+                </div>
+
+                {isRunning && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 14 }}>
+                      <span style={{ color: '#e2e8f0', fontWeight: 500 }}>{curerntFile}</span>
+                      <span style={{ color: '#38bdf8', fontWeight: 600 }}>{currentCompatibility}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 14 }}>
+                    <span style={{ color: '#94a3b8' }}>Overall Progress</span>
+                    <span style={{ color: '#e2e8f0', fontWeight: 600 }}>{progressPercent}%</span>
+                  </div>
+                  <div style={{
+                    width: '100%',
+                    height: 8,
+                    borderRadius: 999,
+                    background: 'rgba(148, 163, 184, 0.3)',
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      width: `${progressPercent}%`,
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #38bdf8 0%, #4caf50 100%)',
+                      transition: 'width 280ms ease-out',
+                    }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {
             uploaded ||
             <FileUploader 
@@ -729,8 +801,6 @@ function App() {
             />
           }
 
-          <div style={{ height: 44 }}></div>
-          
           {
             isReady ||
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
