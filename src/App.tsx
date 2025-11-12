@@ -532,11 +532,11 @@ function App() {
                 <div
                   style={{ height: 150, border: '1px solid #bdbdbd', padding: 20, display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#bdbdbd', fontSize: 24 }}
                 >
-                  <p style={{ lineHeight: '32px' }}>Upload or drop <br/>LottieFiles or Zip here to test</p>
+                  <p style={{ lineHeight: '32px' }}>Drag and drop file here or click to browse <br/>(lottie: .json/.lot, bulk: .zip)</p>
                 </div>
               }
               name="file"
-              types={['json', 'zip']}
+              types={['json', 'lot', 'zip']}
               multiple
             />
           }
