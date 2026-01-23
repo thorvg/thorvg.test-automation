@@ -1,5 +1,9 @@
 # ThorVG Test Automation
 
+<p align="center">
+  <img width="800" height="auto" src="https://github.com/thorvg/thorvg.site/blob/main/readme/logo/512/thorvg-banner.png">
+</p>
+
 ThorVG Test Automation is a comprehensive rendering test tool designed for the ThorVG Engine. This versatile tool operates seamlessly as both a Graphical User Interface (GUI) and a Command-Line Interface (CLI). Its primary function is to identify rendering errors by performing a meticulous canvas bitmap comparison automatically.
 
 ## Key Features
