@@ -47,6 +47,11 @@ function App() {
 
   const [uploaded, setUploaded] = useState(false);
   const [fileLength, setFileLength] = useState(0);
+  const [autoStartPending, setAutoStartPending] = useState(false);
+  const pendingUrlsRef = useRef<string[]>([]);
+  const [isFetchingUrls, setIsFetchingUrls] = useState(false);
+  const [fetchUrlError, setFetchUrlError] = useState('');
+  const [urlInput, setUrlInput] = useState('');
   
   const [curerntFile, setCurrentFile] = useState('');
   const [currentCompatibility, setCurrentCompatibility] = useState('');
@@ -107,6 +112,16 @@ function App() {
 
     // check debug mode from query param
     isDebug = window.location.href.includes('debug');
+
+    const filesParam = params.get('files');
+    if (filesParam) {
+      const urls = filesParam.split(',').map((u) => u.trim()).filter(Boolean);
+      if (urls.length > 0) {
+        pendingUrlsRef.current = urls;
+        setAutoStartPending(true);
+      }
+    }
+
     initialized.current = true;
     loadVersion();
   }, []);
@@ -148,6 +163,67 @@ function App() {
     const newUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ''}${window.location.hash}`;
     window.history.replaceState({}, '', newUrl);
   }, [thorvgRenderer, isFrameTestingEnabled, shouldAutoDownloadPdf, shouldDownloadFailedZip]);
+
+  const startFromUrls = async (urls: string[]) => {
+    if (urls.length === 0) return;
+    setIsFetchingUrls(true);
+    setFetchUrlError('');
+    const files: File[] = [];
+    const errors: string[] = [];
+
+    for (const url of urls) {
+      const decodedUrl = decodeURIComponent(url);
+      try {
+        const response = await fetch(decodedUrl);
+        if (!response.ok) {
+          errors.push(`HTTP ${response.status}: ${decodedUrl}`);
+          continue;
+        }
+        const blob = await response.blob();
+        const rawName = decodedUrl.split('/').pop()?.split('?')[0] || 'lottie.json';
+
+        if (rawName.endsWith('.zip')) {
+          const zipReader = new ZipReader(new BlobReader(blob));
+          const entries = await zipReader.getEntries();
+          for (const entry of entries) {
+            if (entry.filename.startsWith('__MACOSX')) continue;
+            const writer = new TextWriter();
+            // @ts-ignore
+            const fileContent = await entry.getData(writer);
+            const fileBlob = new Blob([fileContent], { type: 'application/json' });
+            files.push(new File([fileBlob], entry.filename));
+          }
+          await zipReader.close();
+        } else {
+          const fileName = rawName.match(/\.(json|lot)$/i) ? rawName : `${rawName}.json`;
+          files.push(new File([blob], fileName, { type: 'application/json' }));
+        }
+      } catch (err: any) {
+        const isCors = err?.message === 'Failed to fetch';
+        errors.push(isCors
+          ? `CORS blocked: ${decodedUrl}\n→ The server must allow cross-origin requests (Access-Control-Allow-Origin header).`
+          : `${err?.message ?? err}: ${decodedUrl}`
+        );
+      }
+    }
+
+    setIsFetchingUrls(false);
+
+    if (files.length > 0) {
+      setFileLength(files.length);
+      setUploaded(true);
+      start(files);
+    } else {
+      setFetchUrlError(errors.length > 0 ? errors.join('\n') : 'No files could be loaded from the provided URL(s).');
+    }
+  };
+
+  useEffect(() => {
+    if (!autoStartPending) return;
+    setAutoStartPending(false);
+    startFromUrls(pendingUrlsRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStartPending]);
 
   const getFileDownloadUrl = (file: File) => {
     const cached = fileUrlMap.current.get(file);
@@ -882,9 +958,24 @@ function App() {
             </div>
           )}
 
+          {fetchUrlError && (
+            <div style={{ width: '100%', maxWidth: 530, marginBottom: 12, padding: '12px 16px', borderRadius: 8, background: 'rgba(244,67,54,0.15)', border: '1px solid #f44336', color: '#f44336', fontSize: 13, fontFamily: 'Menlo, Consolas, monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+              {fetchUrlError}
+            </div>
+          )}
+
           {
             uploaded ||
-            <FileUploader 
+            (isFetchingUrls
+              ? (
+                <div
+                  style={{ height: 150, border: '1px solid #38bdf8', padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: '#38bdf8', fontSize: 18, gap: 12, borderRadius: 8 }}
+                >
+                  <div style={{ fontSize: 28 }}>⏳</div>
+                  <p style={{ margin: 0 }}>Fetching files from URL…</p>
+                </div>
+              )
+              : <FileUploader
               className="file-uploader"
               handleChange={async (_fileList: any) => {
                 let fileList = [];
@@ -928,7 +1019,74 @@ function App() {
               name="file"
               types={['json', 'lot', 'zip']}
               multiple
-            />
+            />)
+          }
+
+          {
+            uploaded ||
+            <div style={{ width: '100%', maxWidth: 530, marginTop: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.15)' }} />
+                <span style={{ fontSize: 12, color: '#64748b', letterSpacing: '0.1em' }}>OR TEST FROM URL</span>
+                <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.15)' }} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <textarea
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                      const urls = urlInput.split(/[\n,]/).map((u) => u.trim()).filter(Boolean);
+                      if (urls.length === 0) return;
+                      const params = new URLSearchParams(window.location.search);
+                      params.set('files', urls.join(','));
+                      window.location.search = params.toString();
+                    }
+                  }}
+                  placeholder={'https://example.com/animation.json\nhttps://example.com/animation2.json'}
+                  rows={2}
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    border: '1px solid rgba(148, 163, 184, 0.3)',
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    color: '#e2e8f0',
+                    fontSize: 13,
+                    fontFamily: 'Menlo, Consolas, monospace',
+                    resize: 'vertical',
+                    outline: 'none',
+                  }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    disabled={!urlInput.trim()}
+                    onClick={() => {
+                      const urls = urlInput.split(/[\n,]/).map((u) => u.trim()).filter(Boolean);
+                      if (urls.length === 0) return;
+                      const params = new URLSearchParams(window.location.search);
+                      params.set('files', urls.join(','));
+                      window.location.search = params.toString();
+                    }}
+                    style={{
+                      padding: '6px 18px',
+                      borderRadius: 6,
+                      border: 'none',
+                      background: urlInput.trim() ? '#38bdf8' : 'rgba(148, 163, 184, 0.2)',
+                      color: urlInput.trim() ? '#0f172a' : '#64748b',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: urlInput.trim() ? 'pointer' : 'not-allowed',
+                      transition: 'background 150ms',
+                    }}
+                  >
+                    Run Test
+                  </button>
+                </div>
+              </div>
+            </div>
           }
 
           {
