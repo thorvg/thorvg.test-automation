@@ -806,7 +806,7 @@ function App() {
       <div className="App">
         <header className="App-header" style={{ paddingBottom: uploaded ? 0 : 64 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, marginTop: 64 }}>
-            <p style={{ margin: 0, fontSize: 28, fontWeight: 'bold' }}>ThorVG Test Automation</p>
+            <p style={{ margin: 0, fontSize: 28, fontWeight: 'bold' }}>ThorVG Web Test</p>
             <span className="thorvg-version">v{version}</span>
             <span
               className="status-badge"
