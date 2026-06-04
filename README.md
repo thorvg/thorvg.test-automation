@@ -1,10 +1,10 @@
-# ThorVG Test Automation
+# ThorVG Web Test
 
 <p align="center">
   <img width="550" height="auto" src="https://github.com/thorvg/thorvg.site/blob/main/readme/logo/animated_brand.svg">
 </p>
 
-ThorVG Test Automation is a comprehensive rendering test tool designed for the ThorVG Engine. This versatile tool operates seamlessly as both a Graphical User Interface (GUI) and a Command-Line Interface (CLI). Its primary function is to identify rendering errors by performing a meticulous canvas bitmap comparison automatically.
+ThorVG Web Test is a comprehensive rendering test tool designed for the ThorVG Engine. This versatile tool operates seamlessly as both a Graphical User Interface (GUI) and a Command-Line Interface (CLI). Its primary function is to identify rendering errors by performing a meticulous canvas bitmap comparison automatically.
 
 ## Key Features
 
@@ -12,24 +12,24 @@ ThorVG Test Automation is a comprehensive rendering test tool designed for the T
 The tool is equipped with both a Graphical User Interface (GUI) and a Command-Line Interface (CLI), providing flexibility for different testing environments and user preferences.
 
 ### Automated Rendering Error Detection
-ThorVG Test Automation streamlines the testing process by automatically detecting rendering errors. Through a sophisticated canvas bitmap comparison, it quickly identifies discrepancies, ensuring the reliability and accuracy of rendered images.
+ThorVG Web Test streamlines the testing process by automatically detecting rendering errors. Through a sophisticated canvas bitmap comparison, it quickly identifies discrepancies, ensuring the reliability and accuracy of rendered images.
 
 ## How It Works
 
 ### Workflow
-This figure illustrates a brief workflow of the ThorVG test automation.</br>
+This figure illustrates a brief workflow for ThorVG Web Test.</br>
 
-![image](https://github.com/thorvg/thorvg.test-automation/assets/3711518/37ea8cf9-6329-445d-9c76-73665c66d4b0)
+![image](https://github.com/thorvg/thorvg.web-test/assets/3711518/37ea8cf9-6329-445d-9c76-73665c66d4b0)
 
 ### GUI
 In GUI mode, developers benefit from a user-friendly interface, allowing them to interact with the tool effortlessly. The graphical representation aids in visualizing rendering errors, making the debugging process more intuitive.
-- [Try it out](https://thorvg-test-automation.vercel.app)
+- [Try it out](https://thorvg-web-test.vercel.app)
 
 ### CLI
 For a streamlined and automated testing workflow, the Command-Line Interface is ideal. It facilitates integration into automated testing pipelines and continuous integration systems.
 
 ```sh
-$npm i -g ./cli # in thorvg.test-automation
+$npm i -g ./cli # in thorvg.web-test
 
 $tvg-cli /path/to/target-dir
 
@@ -51,7 +51,7 @@ Options:
 
 To enhance the robustness of ThorVG, we plan to integrate test automation using ThorVG. The following figure illustrates a concise workflow for ThorVG's Continuous Integration (CI) test automation.
 
-![image](https://github.com/thorvg/thorvg.test-automation/assets/3711518/a15c3458-2d2c-4c1e-bd01-c12217eba377)
+![image](https://github.com/thorvg/thorvg.web-test/assets/3711518/a15c3458-2d2c-4c1e-bd01-c12217eba377)
 
 ## Review with PDF
 

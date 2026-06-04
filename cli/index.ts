@@ -10,7 +10,7 @@ import art from 'ascii-art';
 // @ts-ignore
 import Table from 'cli-table';
 
-const TEST_URL = 'https://thorvg-test-automation.vercel.app/?debug=true';
+const TEST_URL = 'https://thorvg-web-test.vercel.app/?debug=true';
 
 // Find browser executable path (cross-platform)
 function findBrowserPath(): string | undefined {
